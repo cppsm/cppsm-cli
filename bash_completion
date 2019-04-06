@@ -1,0 +1,37 @@
+#!/bin/bash -e
+
+__cppsm_complete() {
+  local IFS=$' \t\n'
+  COMPREPLY=()
+  local PREVIOUS="${3#\"}"
+  PREVIOUS="${PREVIOUS%\"}"
+  local CURRENT="${2#\"}"
+  CURRENT="${CURRENT%\"}"
+  case "$PREVIOUS" in
+    cppsm)
+      # shellcheck disable=SC2207
+      COMPREPLY=($(compgen -W "add build build-watch hello init list remove setup test test-watch update-all" -- "$CURRENT"))
+      ;;
+    add)
+      # shellcheck disable=SC2207
+      COMPREPLY=($(compgen -W "equipment requires" -- "$CURRENT"))
+      ;;
+    equipment|requires)
+      if command -v jq > /dev/null && command -v curl > /dev/null && command -v sed > /dev/null; then
+        # shellcheck disable=SC2207
+        COMPREPLY=($(curl -s "https://api.github.com/search/repositories?q=topic:cppsm+${CURRENT##*/}" | \
+                       jq '.items | .[] | .clone_url'))
+      fi
+      ;;
+    https:*.git)
+      if command -v sed > /dev/null; then
+        # shellcheck disable=SC2207
+        COMPREPLY=($(git ls-remote --heads "$PREVIOUS" | sed -e 's#[^ ]*\s*refs/heads/##g'))
+      fi
+      ;;
+    *)
+      ;;
+  esac
+}
+
+complete -F __cppsm_complete -o default cppsm
