@@ -15,8 +15,29 @@ project.
 
 ## <a id="contents"></a> [≡](#contents) [Contents](#contents)
 
+- [Install](#install)
 - [Synopsis](#synopsis)
 - [Project structure](#project-structure)
+
+## <a id="install"></a> [≡](#contents) [Install](#install)
+
+Clone the `cppsm-cli` somewhere:
+
+```bash
+git clone https://github.com/cppsm/cppsm-cli.git
+```
+
+Add to your `.bash_profile`:
+
+```bash
+CPPSM="path to cppsm-cli directory"
+export PATH="$CPPSM/bin:$PATH"
+. "$CPPSM/bash_completion"
+```
+
+For the optional auto completion of git urls you must have both
+[`curl`](https://curl.haxx.se/) and [`jq`](https://stedolan.github.io/jq/)
+commands in path.
 
 ## <a id="synopsis"></a> [≡](#contents) [Synopsis](#synopsis)
 
