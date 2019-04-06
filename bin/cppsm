@@ -3,7 +3,17 @@
 # shellcheck source=../commands/.settings
 . "${BASH_SOURCE%/*/*}/commands/.settings"
 
-COMMAND="$1"
+COMMAND="$CPPSM/commands/$1"
 shift
 
-"$CPPSM/commands/$COMMAND" "$@"
+if [ ! -x "$COMMAND" ]; then
+  # shellcheck disable=SC2035
+  COMMANDS="$(cd "$CPPSM/commands" && echo *)"
+  COMMANDS="${COMMANDS// /|}"
+  cat << EOF
+Usage: ${0##*/} [$COMMANDS]
+EOF
+  exit 1
+fi
+
+"$COMMAND" "$@"
