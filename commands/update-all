@@ -1,0 +1,34 @@
+#!/bin/bash -e
+
+# shellcheck source=.settings
+. "${BASH_SOURCE%/*}/.settings"
+
+if [ "$#" -ne 0 ] || [ ! -e .gitmodules ] ; then
+  CMD="${0##*/}"
+  cat << EOF
+Usage: $CMD
+
+Updates all cppsm managed submodules and runs init to update configuration
+files.
+EOF
+  exit 1
+fi
+
+update-by-key () {
+  local KEY="$1"
+  local DIR
+  DIR="$(git config --file .gitmodules --get "$KEY")"
+  git submodule update --remote -- "$DIR"
+  git add "$DIR"
+}
+
+for KEY in $(git config \
+                 --file .gitmodules \
+                 --name-only \
+                 --get-regexp "^submodule\.(equipment|requires)/.*\.path$"); do
+  update-by-key "$KEY"
+done
+
+update-by-key "submodule..cppsm.path"
+
+"$CPPSM/commands/init"

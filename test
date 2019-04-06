@@ -1,0 +1,24 @@
+#!/bin/bash -ex
+
+export PATH="$PWD/bin:$PATH"
+
+mkdir self-test && cd "$_"
+
+git init
+cppsm init
+cppsm hello
+
+.cppsm/travis-ci
+
+git submodule add -b v1 https://github.com/per-framework/dumpster.cpp.git equipment/dumpster.cpp/v1
+cppsm add equipment https://github.com/per-framework/dumpster.cpp.git v1
+cppsm add requires https://github.com/per-framework/dumpster.cpp.git v1
+cppsm add equipment https://github.com/per-framework/dumpster.cpp.git v1
+
+cppsm list
+
+cppsm remove requires/polyfill.cpp/v1
+
+if cppsm list; then
+  exit 1
+fi

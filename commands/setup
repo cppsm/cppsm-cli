@@ -1,0 +1,66 @@
+#!/bin/bash -e
+
+# shellcheck source=.settings
+. "${BASH_SOURCE%/*}/.settings"
+
+if [ "$#" -ne 0 ] || [ ! -f CMakeLists.txt ]; then
+  CMD="${0##*/}"
+  cat << EOF
+Usage: [option=value ...] $CMD
+
+Options:
+
+  CMAKE_BUILD_TYPE=Debug|Release
+
+  CTEST_OUTPUT_ON_FAILURE=1|0
+
+  CC=cc|gcc|clang|...
+  CXX=c++|g++|clang++|...
+
+  CLEAN=0|1
+
+Run $CMD in a directory containing CMakeLists.txt.
+EOF
+  exit 1
+fi
+
+CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
+
+CMAKE_HELP="$(cmake --help)"
+
+INIT_CMD=(cmake)
+if [[ "$CMAKE_HELP" =~ 'Visual Studio' ]] && [ -z "$CXX" ]; then
+  DIR=".build"
+else
+  DIR=".build.$CMAKE_BUILD_TYPE${CXX:+.}$CXX"
+  INIT_CMD+=("-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE")
+
+  if [[ "$CMAKE_HELP" =~ "MSYS Makefiles" ]]; then
+    INIT_CMD+=("-G" "MSYS Makefiles")
+    export CMAKE_MAKE_PROGRAM="make"
+  fi
+fi
+INIT_CMD+=(..)
+
+export WATCH_CMD=(fswatch --one-per-batch --recursive)
+if [ "$OSTYPE" = "linux-gnu" ] || \
+     [ "$OSTYPE" = "msys" ] || \
+     [ "$OSTYPE" = "cygwin" ]; then
+  # The default monitor notifies on reads accesses...
+  WATCH_CMD+=(--monitor poll_monitor '--latency=5')
+fi
+
+export CTEST_OUTPUT_ON_FAILURE="${CTEST_OUTPUT_ON_FAILURE:-1}"
+
+export BUILD_CMD="cmake --build . --config $CMAKE_BUILD_TYPE"
+export TEST_CMD="$BUILD_CMD && ctest -C $CMAKE_BUILD_TYPE"
+
+CLEAN="${CLEAN:-0}"
+if [ "$CLEAN" = 1 ]; then
+  rm -rf "$DIR"
+fi
+
+mkdir -p "$DIR" && cd "$_"
+"${INIT_CMD[@]}"
+
+WATCH_CMD+=(../*)

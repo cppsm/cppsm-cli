@@ -1,0 +1,53 @@
+#!/bin/bash -e
+
+# shellcheck source=.settings
+. "${BASH_SOURCE%/*}/.settings"
+
+KIND="${1%/}"
+URL="$2"
+BRANCH="$3"
+
+if [ "$#" -ne 3 ] || \
+     [ ! -d .git ] || \
+     { [ "$KIND" != requires ] && [ "$KIND" != equipment ]; } ; then
+  CMD="${0##*/}"
+  cat << EOF
+Usage: $CMD [requires|equipment] url branch
+
+Adds a new cppsm compatible submodule and recursively the submodules it requires
+to the project.
+
+This command is idempotent and can be run to e.g. add new transitive
+dependencies after updating submodules.
+EOF
+  exit 1
+fi
+
+NAME="${URL##*/}"
+NAME="${NAME%.git}"
+
+DESIRED="$KIND/$NAME/$BRANCH"
+
+if [ -e "$DESIRED" ]; then
+  EXISTING="$DESIRED"
+  echo "$EXISTING already exists."
+elif [ -e "requires/$NAME/$BRANCH" ]; then
+  EXISTING="requires/$NAME/$BRANCH"
+  echo "$EXISTING already exists."
+else
+  if [ -e "equipment/$NAME/$BRANCH" ]; then
+    echo "Promoting equipment/$NAME/$BRANCH -> $DESIRED"
+    "$CPPSM/commands/remove" "equipment/$NAME/$BRANCH"
+  fi
+  git submodule add -b "$BRANCH" "$URL" "$DESIRED"
+  EXISTING="$DESIRED"
+fi
+
+for SUBMODULE in $(git config \
+                       --file "$EXISTING/.gitmodules" \
+                       --name-only \
+                       --get-regexp '^submodule\.requires/.*\.path$'); do
+  SUBMODULE_URL=$(git config --file "$EXISTING/.gitmodules" --get "${SUBMODULE%.path}.url")
+  SUBMODULE_BRANCH=$(git config --file "$EXISTING/.gitmodules" --get "${SUBMODULE%.path}.branch")
+  "$CPPSM/commands/add" "$KIND" "$SUBMODULE_URL" "$SUBMODULE_BRANCH"
+done

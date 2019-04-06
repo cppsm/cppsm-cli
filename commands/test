@@ -1,0 +1,6 @@
+#!/bin/bash -e
+
+# shellcheck source=setup
+. "${BASH_SOURCE%/*}/setup"
+
+sh -c "$TEST_CMD"

@@ -1,0 +1,30 @@
+#!/bin/bash -e
+
+# shellcheck source=.settings
+. "${BASH_SOURCE%/*}/.settings"
+
+SUBMODULE="${1%/}"
+
+if [ "$#" -ne 1 ] || [ ! -d "$SUBMODULE" ] ; then
+  CMD="${0##*/}"
+  cat << EOF
+Usage: $CMD path
+
+Removes a previously required submodule.
+
+Note that this command does remove submodules transitively.
+EOF
+  exit 1
+fi
+
+git config -f .git/config --remove-section "submodule.$SUBMODULE"
+git config -f .gitmodules --remove-section "submodule.$SUBMODULE"
+
+git add .gitmodules
+git rm --cached "$SUBMODULE"
+
+rm -r "$SUBMODULE"
+rmdir -p "${_%/*}" 2>/dev/null || true
+
+rm -rf ".git/modules/$SUBMODULE"
+rmdir -p "${_%/*}" 2>/dev/null || true

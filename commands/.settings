@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+export CPPSM="${BASH_SOURCE%/*/*}"
+
+if [ -n "$TRAVIS_OS_NAME" ]; then
+  set -x
+fi

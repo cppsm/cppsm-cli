@@ -1,0 +1,39 @@
+#!/bin/bash -e
+
+# shellcheck source=.settings
+. "${BASH_SOURCE%/*}/.settings"
+
+if [ "$#" -ne 0 ] || [ ! -d .git ] || [ ! -d .git ]; then
+  CMD="${0##*/}"
+  cat << EOF
+Usage: $CMD
+
+Initializes a new C++ project with cppsm configuration files or updates an
+existing project to use the latest configuration files.
+
+Run $CMD in the top-level directory of a fresh git project.
+EOF
+  exit 1
+fi
+
+if [ ! -d .cppsm ]; then
+  git submodule add -b master https://github.com/cppsm/cppsm-boilerplate.git .cppsm
+fi
+
+ln -fs .cppsm/.clang-format .clang-format
+ln -fs .cppsm/.gitignore .gitignore
+ln -fs .cppsm/.prettierrc .prettierrc
+
+cat << EOF > CMakeLists.txt
+cmake_minimum_required(VERSION 3.9)
+include(.cppsm/c++17-no-rtti-no-exns.cmake)
+EOF
+
+cp "$CPPSM/.travis.yml" .travis.yml
+
+git add \
+    .clang-format \
+    .gitignore \
+    .prettierrc \
+    .travis.yml \
+    CMakeLists.txt

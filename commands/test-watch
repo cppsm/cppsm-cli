@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+# shellcheck source=setup
+. "${BASH_SOURCE%/*}/setup"
+
+sh -c "$TEST_CMD" || true
+"${WATCH_CMD[@]}" | xargs -n1 -I{} sh -c "$TEST_CMD"

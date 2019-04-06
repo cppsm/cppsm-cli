@@ -1,0 +1,9 @@
+#!/bin/bash -e
+
+# shellcheck source=../commands/.settings
+. "${BASH_SOURCE%/*/*}/commands/.settings"
+
+COMMAND="$1"
+shift
+
+"$CPPSM/commands/$COMMAND" "$@"

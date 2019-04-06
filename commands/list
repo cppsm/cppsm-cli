@@ -1,0 +1,88 @@
+#!/bin/bash -e
+
+# shellcheck source=.settings
+. "${BASH_SOURCE%/*}/.settings"
+
+if [ "$#" -ne 0 ] || [ ! -e .gitmodules ] ; then
+  CMD="${0##*/}"
+  cat << EOF
+Usage: $CMD
+
+Prints out a dependency tree of submodules.
+
+This command exits with an error code in case any problems are found in the
+dependency tree.
+EOF
+  exit 1
+fi
+
+EXIT=0
+
+tree() {
+  local KEY SUB DIR URL NAME BRANCH CONNECT i
+
+  local GITMODULES="$1"
+  local KIND="$2"
+  local PREFIX="$3"
+  local TURN="$4"
+  local PARENT="$5"
+
+  local KEYS=()
+  while IFS= read -r KEY; do
+    KEYS+=("$KEY")
+  done < <(git config \
+               --file "$GITMODULES" \
+               --name-only \
+               --get-regexp "^submodule\.($KIND)/.*\.path$")
+
+  if [ 0 = ${#KEYS[@]} ]; then
+    CONNECT='─'
+  else
+    CONNECT='┬'
+  fi
+
+  if [ -z "$PARENT" ]; then
+    URL="$(git config --get remote.origin.url || echo -)"
+    NAME="${URL%.git}"
+    NAME="${NAME##*/}"
+    BRANCH="$(git symbolic-ref --short HEAD)"
+    echo "$NAME/$BRANCH ($URL)"
+  else
+    echo "$PREFIX$TURN$CONNECT $PARENT"
+
+    if [ "$TURN" = '├─' ]; then
+      PREFIX="${PREFIX}│ "
+    else
+      PREFIX="${PREFIX}  "
+    fi
+  fi
+
+  for ((i = 0; i < ${#KEYS[@]}; ++i)); do
+    SUB=${KEYS[$i]}
+    SUB="${SUB%.path}"
+    SUB="${SUB#submodule.}"
+
+    KEY="${SUB#*/}"
+
+    if [ $((i + 1)) = ${#KEYS[@]} ]; then
+      TURN='└─'
+    else
+      TURN='├─'
+    fi
+
+    if DIR="$(git config --file .gitmodules --get "submodule.requires/$KEY.path" || \
+              git config --file .gitmodules --get "submodule.equipment/$KEY.path")"; then
+      URL="$(git config --file .gitmodules --get "submodule.requires/$KEY.url" || \
+             git config --file .gitmodules --get "submodule.equipment/$KEY.url")"
+
+      tree "$DIR/.gitmodules" requires "$PREFIX" "$TURN" "$DIR ($URL)"
+    else
+      EXIT=1
+      echo "$PREFIX${TURN}─ $SUB" $'\033[31;1m── submodule missing\033[0m'
+    fi
+  done
+}
+
+tree .gitmodules 'requires|equipment' '' '├─' ''
+
+exit $EXIT
