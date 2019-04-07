@@ -10,11 +10,18 @@ __cppsm_complete() {
   case "$PREVIOUS" in
     cppsm)
       # shellcheck disable=SC2207
-      COMPREPLY=($(compgen -W "add build build-watch hello init list remove setup test test-watch update-all" -- "$CURRENT"))
+      COMPREPLY=($(compgen -W "add build build-watch clone hello init list remove setup test test-watch update-all" -- "$CURRENT"))
       ;;
     add)
       # shellcheck disable=SC2207
       COMPREPLY=($(compgen -W "equipment requires" -- "$CURRENT"))
+      ;;
+    clone)
+      if command -v jq > /dev/null && command -v curl > /dev/null && command -v sed > /dev/null; then
+        # shellcheck disable=SC2207
+        COMPREPLY=($(curl -s "https://api.github.com/search/repositories?q=topic:cppsm+${CURRENT##*/}" | \
+                       jq '.items | .[] | .ssh_url'))
+      fi
       ;;
     equipment|requires)
       if command -v jq > /dev/null && command -v curl > /dev/null && command -v sed > /dev/null; then
@@ -23,7 +30,7 @@ __cppsm_complete() {
                        jq '.items | .[] | .clone_url'))
       fi
       ;;
-    https:*.git)
+    https:*.git|git*.git)
       if command -v sed > /dev/null; then
         # shellcheck disable=SC2207
         COMPREPLY=($(git ls-remote --heads "$PREVIOUS" | sed -e 's#[^ ]*\s*refs/heads/##g'))

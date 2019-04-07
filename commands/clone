@@ -1,0 +1,21 @@
+#!/bin/bash -e
+
+# shellcheck source=.settings
+. "${BASH_SOURCE%/*}/.settings"
+
+if [ "$#" -ne 2 ]; then
+  CMD="${0##*/}"
+  cat << EOF
+Usage: $CMD url branch
+
+Clones the specified cppsm compatible repository and its dependencies.
+EOF
+  exit 1
+fi
+
+NAME="${1%.git}"
+NAME="${NAME##*/}"
+
+git clone -b "$2" "$1"
+cd "$NAME"
+git submodule update --init

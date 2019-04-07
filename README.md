@@ -67,7 +67,14 @@ cppsm test-watch
 Clone an existing project:
 
 ```bash
-git clone URI
+cppsm clone URL BRANCH
+```
+
+Or clone an existing project using plain git:
+
+```bash
+git clone -b BRANCH URL/NAME.git
+cd NAME
 git submodule update --init     # NOTE: non-recursive
 ```
 
