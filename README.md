@@ -64,6 +64,12 @@ emacs internals/program/hello.cpp &
 cppsm test-watch
 ```
 
+Format project files inplace:
+
+```bash
+cppsm format
+```
+
 Clone an existing project:
 
 ```bash

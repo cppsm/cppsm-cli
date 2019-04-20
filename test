@@ -8,6 +8,11 @@ git init
 cppsm init
 cppsm hello
 
+git add internals provides
+git config --global user.email "ci@script.com"
+git config --global user.name "CI script"
+git commit -m Initial
+
 .cppsm/travis-ci
 
 git submodule add -b v1 https://github.com/per-framework/dumpster.cpp.git equipment/dumpster.cpp/v1

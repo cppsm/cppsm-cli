@@ -56,9 +56,8 @@ cat << EOF > internals/testing/message_test.cpp
 
 using namespace testing_v1;
 
-auto hello_test = test([]() {
-  verify("Hello, there!" == message_v1::hello("there"));
-});
+auto hello_test =
+    test([]() { verify("Hello, there!" == message_v1::hello("there")); });
 EOF
 
 mkdir -p internals/program

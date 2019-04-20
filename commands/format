@@ -1,0 +1,25 @@
+#!/bin/bash -e
+
+# shellcheck source=.settings
+. "${BASH_SOURCE%/*}/.settings"
+
+if [ "$#" -ne 0 ] || [ ! -d .git ] ; then
+  CMD="${0##*/}"
+  cat << EOF
+Usage: $CMD
+
+Formats project files inplace using
+- clang-format ( https://clang.llvm.org/docs/ClangFormat.html ), and
+- prettier ( https://prettier.io/ ).
+EOF
+  exit 1
+fi
+
+for ROOT in provides internals ; do
+  find $ROOT -name '*.md' -print0 | xargs -0 prettier --write --
+  for SUFFIX in cpp hpp ; do
+    find $ROOT -name "*.$SUFFIX" -print0 | xargs -0 clang-format -i --
+  done
+done
+
+find . -name '*.md' -maxdepth 1 -print0 | xargs -0 prettier --write --
