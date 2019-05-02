@@ -1,4 +1,4 @@
-# [≡](#contents) [C++ submodule manager command-line interface](#) [![Build Status](https://travis-ci.org/cppsm/cppsm-cli.svg?branch=master)](https://travis-ci.org/cppsm/cppsm-cli)
+# [≡](#contents) [C++ submodule manager command-line interface](#)
 
 Poor man's submodule management, build scripts, and CI integration for simple,
 "conventional" C++ libraries, executable tests, and executable programs on top
@@ -13,6 +13,9 @@ The idea is to minimize boilerplate by relying on simple conventions over
 excessive configuration. See also the
 [C++ submodule manager boilerplate](https://github.com/cppsm/cppsm-boilerplate)
 project.
+
+[![Build Status](https://travis-ci.org/cppsm/cppsm-cli.svg?branch=master)](https://travis-ci.org/cppsm/cppsm-cli)
+[![Code Coverage](https://img.shields.io/codecov/c/github/cppsm/cppsm-cli/master.svg)](https://codecov.io/github/cppsm/cppsm-cli?branch=master)
 
 ## <a id="contents"></a> [≡](#contents) [Contents](#contents)
 
