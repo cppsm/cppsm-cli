@@ -19,6 +19,8 @@ Options:
 
   CLEAN=0|1
 
+  COVERAGE=0|1
+
 Run $CMD in a directory containing CMakeLists.txt.
 EOF
   exit 1
@@ -27,6 +29,8 @@ fi
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
 
 CMAKE_HELP="$(cmake --help)"
+
+COVERAGE="${COVERAGE:-0}"
 
 INIT_CMD=(cmake)
 if [[ "$CMAKE_HELP" =~ 'Visual Studio' ]] && [ -z "$CXX" ]; then
@@ -38,6 +42,9 @@ else
   if [[ "$CMAKE_HELP" =~ "MSYS Makefiles" ]]; then
     INIT_CMD+=("-G" "MSYS Makefiles")
     export CMAKE_MAKE_PROGRAM="make"
+  fi
+  if [ "$COVERAGE" = 1 ]; then
+    INIT_CMD+=("-DCOVERAGE=ON")
   fi
 fi
 INIT_CMD+=(..)

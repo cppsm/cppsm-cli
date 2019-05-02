@@ -5,8 +5,9 @@ Poor man's submodule management, build scripts, and CI integration for simple,
 of
 
 - [CMake](https://cmake.org/),
-- [git](https://git-scm.com/), and
-- [Travis CI](https://travis-ci.org/).
+- [git](https://git-scm.com/),
+- [Travis CI](https://travis-ci.org/), and
+- [Codecov](https://codecov.io/).
 
 The idea is to minimize boilerplate by relying on simple conventions over
 excessive configuration. See also the
