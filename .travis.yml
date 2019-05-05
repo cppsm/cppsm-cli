@@ -6,15 +6,18 @@ notifications:
 matrix:
   include:
     - os: linux
-      dist: trusty
+      dist: xenial
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-7
           packages:
             - g++-8
-            - clang-7
+      env:
+        - GNU_CC="gcc-8"
+        - GNU_CXX="g++-8"
+        - CLANG_CC="clang"
+        - CLANG_CXX="clang++"
     - os: osx
       osx_image: xcode10.2
     - os: windows
