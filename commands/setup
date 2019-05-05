@@ -59,8 +59,10 @@ fi
 
 export CTEST_OUTPUT_ON_FAILURE="${CTEST_OUTPUT_ON_FAILURE:-1}"
 
-export BUILD_CMD="cmake --build . --config $CMAKE_BUILD_TYPE"
-export TEST_CMD="$BUILD_CMD && ctest -C $CMAKE_BUILD_TYPE"
+if command -v nice > /dev/null; then NICE="nice"; else NICE=""; fi
+
+export BUILD_CMD="$NICE cmake --build . --config $CMAKE_BUILD_TYPE"
+export TEST_CMD="$BUILD_CMD && $NICE ctest -C $CMAKE_BUILD_TYPE"
 
 CLEAN="${CLEAN:-0}"
 if [ "$CLEAN" = 1 ]; then
