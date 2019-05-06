@@ -74,8 +74,7 @@ int main() {
 EOF
 
 cat << EOF > internals/CMakeLists.txt
-add_conventional_executable_test(message_test)
-target_link_libraries(message_test PRIVATE message_v1 testing_v1)
+add_conventional_executable_tests(PRIVATE message_v1 testing_v1)
 
 add_conventional_executable(hello)
 target_link_libraries(hello PRIVATE message_v1)
