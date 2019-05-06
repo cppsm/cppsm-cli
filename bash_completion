@@ -10,7 +10,7 @@ __cppsm_complete() {
   case "$PREVIOUS" in
     cppsm)
       # shellcheck disable=SC2207
-      COMPREPLY=($(compgen -W "add build build-watch clone format hello init list remove setup test test-watch update-all" -- "$CURRENT"))
+      COMPREPLY=($(compgen -W "add build build-watch clone format hello init list remove setup test test-watch update upgrade" -- "$CURRENT"))
       ;;
     add)
       # shellcheck disable=SC2207

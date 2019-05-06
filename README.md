@@ -100,10 +100,10 @@ Remove a previously required library:
 cppsm remove requires/NAME/BRANCH
 ```
 
-Update all required libraries:
+Upgrade all required libraries:
 
 ```bash
-cppsm update-all
+cppsm upgrade
 ```
 
 ## <a id="project-structure"></a> [≡](#contents) [Project structure](#project-structure)

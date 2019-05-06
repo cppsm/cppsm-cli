@@ -8,18 +8,19 @@ if [ "$#" -ne 0 ] || [ ! -e .gitmodules ] ; then
   cat << EOF
 Usage: $CMD
 
-Updates all cppsm managed submodules and runs init to update configuration
-files.
+Pulls the current git branch and updates all cppsm managed submodules to the
+versions in the branch.
 EOF
   exit 1
 fi
+
+git pull -r
 
 update-by-key () {
   local KEY="$1"
   local DIR
   DIR="$(git config --file .gitmodules --get "$KEY")"
-  git submodule update --remote -- "$DIR"
-  git add "$DIR"
+  git submodule update --init -- "$DIR"
 }
 
 for KEY in $(git config \
@@ -30,5 +31,3 @@ for KEY in $(git config \
 done
 
 update-by-key "submodule..cppsm.path"
-
-"$CPPSM/commands/init"
