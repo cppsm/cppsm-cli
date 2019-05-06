@@ -28,18 +28,24 @@ fi
 
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
 
-CMAKE_HELP="$(cmake --help)"
+if (set +x && [ -z "$CMAKE_HELP" ]); then
+  CMAKE_HELP="$(cmake --help)"
+fi
+
+cmake-help-contains() {
+  (set +x && [[ "$CMAKE_HELP" =~ $1 ]])
+}
 
 COVERAGE="${COVERAGE:-0}"
 
 INIT_CMD=(cmake)
-if [[ "$CMAKE_HELP" =~ 'Visual Studio' ]] && [ -z "$CXX" ]; then
+if cmake-help-contains "Visual Studio" && [ -z "$CXX" ]; then
   DIR=".build"
 else
   DIR=".build.$CMAKE_BUILD_TYPE${CXX:+.}$CXX"
   INIT_CMD+=("-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE")
 
-  if [[ "$CMAKE_HELP" =~ "MSYS Makefiles" ]]; then
+  if cmake-help-contains "MSYS Makefiles"; then
     INIT_CMD+=("-G" "MSYS Makefiles")
     export CMAKE_MAKE_PROGRAM="make"
   fi
