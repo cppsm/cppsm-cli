@@ -26,6 +26,7 @@ git:
   submodules: false
 
 before_install:
+  - export -f travis_nanoseconds travis_time_start travis_time_finish
   - git submodule update --init
 
 script:
