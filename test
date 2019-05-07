@@ -1,4 +1,6 @@
-#!/bin/bash -ex
+#!/bin/bash -e
+
+if [ "$XTRACE" = 1 ]; then set -x; fi
 
 export PATH="$PWD/bin:$PATH"
 

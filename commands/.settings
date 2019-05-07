@@ -4,6 +4,6 @@ set -o pipefail
 
 export CPPSM="${BASH_SOURCE%/*/*}"
 
-if [ -n "$TRAVIS_OS_NAME" ]; then
+if [ "$XTRACE" = 1 ]; then
   set -x
 fi

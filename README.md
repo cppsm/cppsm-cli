@@ -22,6 +22,9 @@ project.
 - [Install](#install)
 - [Synopsis](#synopsis)
 - [Project structure](#project-structure)
+- [Configuration](#configuration)
+  - [`CODECOV`](#codecov)
+  - [`XTRACE`](#xtrace)
 
 ## <a id="install"></a> [≡](#contents) [Install](#install)
 
@@ -161,3 +164,15 @@ essentially the following structure:
 Note that the include directories are versioned as are CMake target names and
 C++ namespace names. This allows multiple major versions of a library to be used
 simultaneously.
+
+## <a id="configuration"></a> [≡](#contents) [Configuration](#configuration)
+
+### <a id="codecov"></a> [≡](#contents) [`CODECOV`](#codecov)
+
+By default the CI scripts do not generate and push code coverage results to
+[Codecov](https://codecov.io/).  Set `CODECOV=1` to enable code coverage.
+
+### <a id="xtrace"></a> [≡](#contents) [`XTRACE`](#xtrace)
+
+By default the CI scripts do not `set -x` to enable Bash xtrace to avoid
+unnecessary verbosity.  Set `XTRACE=1` to enable Bash xtrace.
