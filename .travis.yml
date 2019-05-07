@@ -29,4 +29,4 @@ before_install:
   - git submodule update --init
 
 script:
-  - .cppsm/travis-ci || ./test
+  - if [ -x ./test ]; then ./test; else .cppsm/travis-ci; fi
