@@ -67,8 +67,15 @@ export CTEST_OUTPUT_ON_FAILURE="${CTEST_OUTPUT_ON_FAILURE:-1}"
 
 if command -v nice > /dev/null; then NICE="nice"; else NICE=""; fi
 
-export BUILD_CMD="$NICE cmake --build . --config $CMAKE_BUILD_TYPE --parallel"
-export TEST_CMD="$BUILD_CMD && $NICE ctest -C $CMAKE_BUILD_TYPE"
+if [ -z "$NUMBER_OF_PROCESSORS" ]; then
+  NUMBER_OF_PROCESSORS=$(getconf _NPROCESSORS_ONLN || echo 2)
+fi
+
+BUILD_PARALLEL="${BUILD_PARALLEL:-$NUMBER_OF_PROCESSORS}"
+TEST_PARALLEL="${TEST_PARALLEL:-$NUMBER_OF_PROCESSORS}"
+
+export BUILD_CMD="$NICE cmake --build . --config $CMAKE_BUILD_TYPE --parallel $BUILD_PARALLEL"
+export TEST_CMD="$BUILD_CMD && $NICE ctest --build-config $CMAKE_BUILD_TYPE --parallel $TEST_PARALLEL"
 
 CLEAN="${CLEAN:-0}"
 if [ "$CLEAN" = 1 ]; then
