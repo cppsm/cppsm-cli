@@ -3,7 +3,7 @@
 # shellcheck source=.settings
 . "${BASH_SOURCE%/*}/.settings"
 
-if [ "$#" -ne 0 ] || [ ! -d .git ] || [ ! -d .git ]; then
+if [ "$#" -ne 0 ] || [ ! -d .git ]; then
   CMD="${0##*/}"
   cat << EOF
 Usage: $CMD
