@@ -49,6 +49,7 @@ else
     INIT_CMD+=("-G" "MSYS Makefiles")
     export CMAKE_MAKE_PROGRAM="make"
   fi
+
   if [ "$COVERAGE" = 1 ]; then
     INIT_CMD+=("-DCOVERAGE=ON")
   fi
@@ -57,7 +58,7 @@ INIT_CMD+=(..)
 
 export WATCH_CMD=(fswatch --one-per-batch --recursive)
 if [[ "$OSTYPE" =~ linux-gnu|msys|cygwin ]]; then
-  # The default monitor notifies on reads accesses...
+  # The default monitor notifies on read accesses...
   WATCH_CMD+=(--monitor poll_monitor '--latency=5')
 fi
 
