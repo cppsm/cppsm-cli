@@ -56,9 +56,7 @@ fi
 INIT_CMD+=(..)
 
 export WATCH_CMD=(fswatch --one-per-batch --recursive)
-if [ "$OSTYPE" = "linux-gnu" ] || \
-     [ "$OSTYPE" = "msys" ] || \
-     [ "$OSTYPE" = "cygwin" ]; then
+if [[ "$OSTYPE" =~ linux-gnu|msys|cygwin ]]; then
   # The default monitor notifies on reads accesses...
   WATCH_CMD+=(--monitor poll_monitor '--latency=5')
 fi
