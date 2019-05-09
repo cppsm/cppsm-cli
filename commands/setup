@@ -21,6 +21,10 @@ Options:
 
   COVERAGE=0|1
 
+  NUMBER_OF_PROCESSORS=1|2|...
+  N_PARALLEL_BUILD=1|2|...
+  N_PARALLEL_TEST=1|2|...
+
 Run $CMD in a directory containing CMakeLists.txt.
 EOF
   exit 1
@@ -70,11 +74,11 @@ if [ -z "$NUMBER_OF_PROCESSORS" ]; then
   NUMBER_OF_PROCESSORS=$(getconf _NPROCESSORS_ONLN || echo 2)
 fi
 
-BUILD_PARALLEL="${BUILD_PARALLEL:-$NUMBER_OF_PROCESSORS}"
-TEST_PARALLEL="${TEST_PARALLEL:-$NUMBER_OF_PROCESSORS}"
+N_PARALLEL_BUILD="${N_PARALLEL_BUILD:-$NUMBER_OF_PROCESSORS}"
+N_PARALLEL_TEST="${N_PARALLEL_TEST:-$NUMBER_OF_PROCESSORS}"
 
-export BUILD_CMD="$NICE cmake --build . --config $CMAKE_BUILD_TYPE --parallel $BUILD_PARALLEL"
-export TEST_CMD="$BUILD_CMD && $NICE ctest --build-config $CMAKE_BUILD_TYPE --parallel $TEST_PARALLEL"
+export BUILD_CMD="$NICE cmake --build . --config $CMAKE_BUILD_TYPE --parallel $N_PARALLEL_BUILD"
+export TEST_CMD="$BUILD_CMD && $NICE ctest --build-config $CMAKE_BUILD_TYPE --parallel $N_PARALLEL_TEST"
 
 CLEAN="${CLEAN:-0}"
 if [ "$CLEAN" = 1 ]; then
