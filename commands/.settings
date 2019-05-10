@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
-set -o pipefail
-
-export CPPSM="${BASH_SOURCE%/*/*}"
-
 if [ "$XTRACE" = 1 ]; then
   set -x
 fi
+
+set -o pipefail
+
+export CPPSM="${BASH_SOURCE%/*/*}"
