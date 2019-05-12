@@ -19,4 +19,4 @@ before_install:
   - export -f travis_nanoseconds travis_time_start travis_time_finish
 
 script:
-  - if [ -x ./test ]; then ./test; else git submodule update --init --recursive $([ $TRAVIS_OS_NAME = windows ] || echo --depth 1) .cppsm && .cppsm/.cli/travis-ci; fi
+  - if [ -x ./test ]; then ./test; else git submodule update --init --recursive --quiet $([ $TRAVIS_OS_NAME = windows ] || echo --depth 1) .cppsm && .cppsm/.cli/travis-ci; fi
