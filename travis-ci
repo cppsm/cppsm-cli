@@ -4,13 +4,13 @@
 . "${BASH_SOURCE%/*}/commands/.settings"
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  TMP="/tmp"
+  TMP="/tmp/"
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
   TMP="$TMPDIR"
 fi
 
-LOCK="$TMP/install.lock"
-OUT="$TMP/install.out"
+LOCK="${TMP}install.lock"
+OUT="${TMP}install.out"
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   locked() { flock "$LOCK" "$@"; }
