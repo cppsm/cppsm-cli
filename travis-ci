@@ -38,7 +38,7 @@ finish() {
 concurrently() {
   local VAR="$1"
   shift
-  locked "$@" >> "$OUT" 2>&1 &
+  "$@" >> "$OUT" 2>&1 &
   PID=$!
   export "$VAR"=$PID
   if [ "$INSTALL_WAIT" = 1 ]; then finish $PID; fi
@@ -58,13 +58,13 @@ N_PARALLEL_UPDATE="${N_PARALLEL_UPDATE:-$NUMBER_OF_PROCESSORS}"
 folded ... concurrently GIT_UPDATE_PID git submodule update --init --depth 1 --jobs "$N_PARALLEL_UPDATE"
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  folded ... concurrently LIBSTD_INSTALL_PID bash -c "sudo -E apt-add-repository -y ppa:ubuntu-toolchain-r/test && sudo -E apt-get -yq update && sudo -E apt-get -yq --no-install-suggests --no-install-recommends install libstdc++-8-dev"
-  folded ... concurrently GCC_INSTALL_PID sudo -E apt-get -yq --no-install-suggests --no-install-recommends install g++-8
+  folded ... concurrently LIBSTD_INSTALL_PID locked bash -c "sudo -E apt-add-repository -y ppa:ubuntu-toolchain-r/test && sudo -E apt-get -yq update && sudo -E apt-get -yq --no-install-suggests --no-install-recommends install libstdc++-8-dev"
+  folded ... concurrently GCC_INSTALL_PID locked sudo -E apt-get -yq --no-install-suggests --no-install-recommends install g++-8
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
-  folded ... concurrently LCOV_INSTALL_PID brew install lcov
-  folded ... concurrently FORMAT_INSTALL_PID brew install prettier clang-format
+  folded ... concurrently LCOV_INSTALL_PID locked brew install lcov
+  folded ... concurrently FORMAT_INSTALL_PID locked brew install prettier clang-format
 elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
-  folded ... concurrently MAKE_INSTALL_PID choco install make
+  folded ... concurrently MAKE_INSTALL_PID locked choco install make
 fi
 
 export CMAKE_HELP
