@@ -28,7 +28,7 @@ fi
 
 finish() {
   local EXIT=0
-  if ! wait "$1"; then
+  if ! wait "${!1}"; then
     EXIT=$?
     cat "$OUT"
   fi
@@ -39,9 +39,9 @@ concurrently() {
   local VAR="$1"
   shift
   "$@" >> "$OUT" 2>&1 &
-  PID=$!
+  local PID=$!
   export "$VAR"=$PID
-  if [ "$INSTALL_WAIT" = 1 ]; then finish $PID; fi
+  if [ "$INSTALL_WAIT" = 1 ]; then finish "$VAR"; fi
 }
 
 folded() {
@@ -75,18 +75,18 @@ if ! command -v cppsm > /dev/null; then
   export PATH="$PWD/.cppsm/.cli/bin:$PATH"
 fi
 
-folded ... finish "$GIT_UPDATE_PID"
+folded ... finish GIT_UPDATE_PID
 
 for CONFIG in Debug Release; do
   export CMAKE_BUILD_TYPE=$CONFIG
   if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-    folded ... finish "$LIBSTD_INSTALL_PID"
+    folded ... finish LIBSTD_INSTALL_PID
     CC="clang" CXX="clang++" folded "Clang $CONFIG" cppsm test
-    folded ... finish "$GCC_INSTALL_PID"
+    folded ... finish GCC_INSTALL_PID
     CC="gcc-8" CXX="g++-8" folded "GCC $CONFIG" cppsm test
   elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
     CC="" CXX="" folded "VC $CONFIG" cppsm test
-    folded ... finish "$MAKE_INSTALL_PID"
+    folded ... finish MAKE_INSTALL_PID
     CC="gcc" CXX="g++" folded "GCC $CONFIG" cppsm test
   elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     CC="clang" CXX="clang++" folded "Clang $CONFIG" cppsm test
@@ -116,10 +116,10 @@ format-check() {
 
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   if [ -n "$CODECOV" ]; then
-    folded ... finish "$LCOV_INSTALL_PID"
+    folded ... finish LCOV_INSTALL_PID
   fi
   folded "Code coverage" code-coverage
-  folded ... finish "$FORMAT_INSTALL_PID"
+  folded ... finish FORMAT_INSTALL_PID
   folded "Format check" format-check
 fi
 
