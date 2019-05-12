@@ -49,6 +49,7 @@ folded() {
   echo -e "travis_fold:start:cppsm.$FOLD\033[33;1m$1\033[0m"
   travis_time_start
   shift
+  echo "$@"
   "$@"
   travis_time_finish
   echo -e "\ntravis_fold:end:cppsm.$FOLD\r"
