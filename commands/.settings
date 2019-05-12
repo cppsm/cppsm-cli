@@ -11,3 +11,9 @@ export CPPSM="${BASH_SOURCE%/*/*}"
 if [ -z "$NUMBER_OF_PROCESSORS" ]; then
   NUMBER_OF_PROCESSORS=$(getconf _NPROCESSORS_ONLN || echo 2)
 fi
+
+if [ "$GIT_QUIET" = 0 ]; then
+  GIT_QUIET=()
+else
+  GIT_QUIET=(--quiet)
+fi

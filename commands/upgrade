@@ -18,7 +18,7 @@ upgrade-by-key () {
   local KEY="$1"
   local DIR
   DIR="$(git config --file .gitmodules --get "$KEY")"
-  git submodule update --remote -- "$DIR"
+  git submodule "${GIT_QUIET[@]}" update --remote -- "$DIR"
   git add "$DIR"
 }
 

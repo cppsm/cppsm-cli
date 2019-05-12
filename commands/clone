@@ -18,6 +18,6 @@ NAME="${NAME##*/}"
 
 N_PARALLEL_UPDATE="${N_PARALLEL_UPDATE:-$NUMBER_OF_PROCESSORS}"
 
-git clone -b "$2" "$1"
+git clone "${GIT_QUIET[@]}" --branch "$2" "$1"
 cd "$NAME"
-git submodule update --init --jobs "$N_PARALLEL_UPDATE"
+git submodule "${GIT_QUIET[@]}" update --init --jobs "$N_PARALLEL_UPDATE"

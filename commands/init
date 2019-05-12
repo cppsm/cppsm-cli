@@ -17,7 +17,7 @@ EOF
 fi
 
 if [ ! -d .cppsm ]; then
-  git submodule add -b master https://github.com/cppsm/cppsm-boilerplate.git .cppsm
+  git submodule "${GIT_QUIET[@]}" add --branch master https://github.com/cppsm/cppsm-boilerplate.git .cppsm
 fi
 
 ln -fs .cppsm/.clang-format .clang-format
