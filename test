@@ -15,7 +15,7 @@ git config --global user.email "ci@script.com"
 git config --global user.name "CI script"
 git commit -m Initial
 
-.cppsm/travis-ci
+../travis-ci
 
 git submodule add -b v1 https://github.com/per-framework/dumpster.cpp.git equipment/dumpster.cpp/v1
 cppsm add equipment https://github.com/per-framework/dumpster.cpp.git v1

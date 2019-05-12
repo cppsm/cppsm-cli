@@ -16,7 +16,6 @@ git:
 
 before_install:
   - export -f travis_nanoseconds travis_time_start travis_time_finish
-  - git submodule update --init
 
 script:
-  - if [ -x ./test ]; then ./test; else .cppsm/travis-ci; fi
+  - if [ -x ./test ]; then ./test; else git submodule update --init --recursive --depth 1 .cppsm && .cppsm/.cli/travis-ci; fi
