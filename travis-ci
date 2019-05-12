@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
-if [ "$XTRACE" = 1 ]; then set -x; fi
+# shellcheck source=commands/.settings
+. "${BASH_SOURCE%/*}/commands/.settings"
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   TMP="/tmp"
@@ -53,7 +54,8 @@ folded() {
   echo -e "\ntravis_fold:end:cppsm.$FOLD\r"
 }
 
-folded ... concurrently GIT_UPDATE_PID git submodule update --init --depth 1
+N_PARALLEL_UPDATE="${N_PARALLEL_UPDATE:-$NUMBER_OF_PROCESSORS}"
+folded ... concurrently GIT_UPDATE_PID git submodule update --init --depth 1 --jobs "$N_PARALLEL_UPDATE"
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
   folded ... concurrently LIBSTD_INSTALL_PID bash -c "sudo -E apt-add-repository -y ppa:ubuntu-toolchain-r/test && sudo -E apt-get -yq update && sudo -E apt-get -yq --no-install-suggests --no-install-recommends install libstdc++-8-dev"
