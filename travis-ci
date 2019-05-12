@@ -3,18 +3,18 @@
 # shellcheck source=commands/.settings
 . "${BASH_SOURCE%/*}/commands/.settings"
 
-if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+if [ "$TRAVIS_OS_NAME" = linux ]; then
   TMP="/tmp/"
-elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
+elif [ "$TRAVIS_OS_NAME" = osx ]; then
   TMP="$TMPDIR"
 fi
 
 LOCK="${TMP}install.lock"
 OUT="${TMP}install.out"
 
-if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+if [ "$TRAVIS_OS_NAME" = linux ]; then
   locked() { flock "$LOCK" "$@"; }
-elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
+elif [ "$TRAVIS_OS_NAME" = osx ]; then
   locked() {
     while ! shlock -f "$LOCK" -p $$ ; do sleep 0.25; done
     local EXIT=0
@@ -22,7 +22,7 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     rm -f "$LOCK"
     return $EXIT
   }
-elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
+elif [ "$TRAVIS_OS_NAME" = windows ]; then
   locked() { "$@"; }
 fi
 
@@ -58,13 +58,13 @@ folded() {
 N_PARALLEL_UPDATE="${N_PARALLEL_UPDATE:-$NUMBER_OF_PROCESSORS}"
 folded ... concurrently GIT_UPDATE_PID git submodule update --init --depth 1 --jobs "$N_PARALLEL_UPDATE"
 
-if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-  folded ... concurrently LIBSTD_INSTALL_PID locked bash -c "sudo -E apt-add-repository -y ppa:ubuntu-toolchain-r/test && sudo -E apt-get -yq update && sudo -E apt-get -yq --no-install-suggests --no-install-recommends install libstdc++-8-dev"
+if [ "$TRAVIS_OS_NAME" = linux ]; then
+  folded ... concurrently LIBSTD_INSTALL_PID locked bash -c 'sudo -E apt-add-repository -y ppa:ubuntu-toolchain-r/test && sudo -E apt-get -yq update && sudo -E apt-get -yq --no-install-suggests --no-install-recommends install libstdc++-8-dev'
   folded ... concurrently GCC_INSTALL_PID locked sudo -E apt-get -yq --no-install-suggests --no-install-recommends install g++-8
-elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
+elif [ "$TRAVIS_OS_NAME" = osx ]; then
   [ "$CODECOV" != 1 ] || folded ... concurrently LCOV_INSTALL_PID locked brew install lcov
   [ "$FORMAT_CHECK" = 0 ] || folded ... concurrently FORMAT_INSTALL_PID locked brew install prettier clang-format
-elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
+elif [ "$TRAVIS_OS_NAME" = windows ]; then
   folded ... concurrently MAKE_INSTALL_PID locked choco install make
 fi
 
@@ -79,18 +79,18 @@ folded ... finish GIT_UPDATE_PID
 
 for CONFIG in Debug Release; do
   export CMAKE_BUILD_TYPE=$CONFIG
-  if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+  if [ "$TRAVIS_OS_NAME" = linux ]; then
     folded ... finish LIBSTD_INSTALL_PID
-    CC="clang" CXX="clang++" folded "Clang $CONFIG" cppsm test
+    CC=clang CXX=clang++ folded "Clang $CONFIG" cppsm test
     folded ... finish GCC_INSTALL_PID
-    CC="gcc-8" CXX="g++-8" folded "GCC $CONFIG" cppsm test
-  elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
-    CC="" CXX="" folded "VC $CONFIG" cppsm test
+    CC=gcc-8 CXX=g++-8 folded "GCC $CONFIG" cppsm test
+  elif [ "$TRAVIS_OS_NAME" = windows ]; then
+    CC='' CXX='' folded "VC $CONFIG" cppsm test
     folded ... finish MAKE_INSTALL_PID
     CC="gcc" CXX="g++" folded "GCC $CONFIG" cppsm test
-  elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
-    CC="clang" CXX="clang++" folded "Clang $CONFIG" cppsm test
-    CC="gcc-8" CXX="g++-8" folded "GCC $CONFIG" cppsm test
+  elif [ "$TRAVIS_OS_NAME" = osx ]; then
+    CC=clang CXX=clang++ folded "Clang $CONFIG" cppsm test
+    CC=gcc-8 CXX=g++-8 folded "GCC $CONFIG" cppsm test
   else
     echo "Unsupported OS: $TRAVIS_OS_NAME"
     exit 1
@@ -114,12 +114,12 @@ format-check() {
   fi
 }
 
-if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+if [ "$TRAVIS_OS_NAME" = osx ]; then
   [ "$CODECOV" != 1 ] || folded ... finish LCOV_INSTALL_PID
-  [ "$CODECOV" != 1 ] || folded "Code coverage" code-coverage
+  [ "$CODECOV" != 1 ] || folded 'Code coverage' code-coverage
 
   [ "$FORMAT_CHECK" = 0 ] || folded ... finish FORMAT_INSTALL_PID
-  [ "$FORMAT_CHECK" = 0 ] || folded "Format check" format-check
+  [ "$FORMAT_CHECK" = 0 ] || folded 'Format check' format-check
 fi
 
 install-output() { cat "$OUT"; }
