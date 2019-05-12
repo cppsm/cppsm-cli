@@ -123,4 +123,5 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
   folded "Format check" format-check
 fi
 
-folded ... cat "$OUT"
+install-output() { cat "$OUT"; }
+folded ... install-output
