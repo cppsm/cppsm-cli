@@ -99,10 +99,10 @@ done
 
 code-coverage() {
   CLEAN=1 COVERAGE=1 cppsm test
-  lcov --capture --directory . --output-file coverage.info
-  lcov --remove coverage.info '/Applications/*' --output-file coverage.info
-  bash <(curl -s https://codecov.io/bash) -f coverage.info
-  rm -f coverage.info
+  local COVERAGE_INFO="${TMP}coverage.info"
+  lcov --capture --directory . --output-file "$COVERAGE_INFO"
+  lcov --remove "$COVERAGE_INFO" '/Applications/*' --output-file "$COVERAGE_INFO"
+  bash <(curl -s https://codecov.io/bash) -f "$COVERAGE_INFO"
 }
 
 format-check() {
