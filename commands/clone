@@ -16,6 +16,8 @@ fi
 NAME="${1%.git}"
 NAME="${NAME##*/}"
 
+N_PARALLEL_UPDATE="${N_PARALLEL_UPDATE:-$NUMBER_OF_PROCESSORS}"
+
 git clone -b "$2" "$1"
 cd "$NAME"
-git submodule update --init
+git submodule update --init --jobs "$N_PARALLEL_UPDATE"
