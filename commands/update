@@ -16,18 +16,12 @@ fi
 
 git pull "${GIT_QUIET[@]}" --rebase
 
-update-by-key () {
-  local KEY="$1"
-  local DIR
-  DIR="$(git config --file .gitmodules --get "$KEY")"
-  git submodule "${GIT_QUIET[@]}" update --init -- "$DIR"
-}
+MODULES=()
+while IFS='' read -r line; do
+  MODULES+=("$line")
+done < <(git config \
+             --file .gitmodules \
+             --get-regexp "^submodule\.(equipment|requires)/.*\.path$" \
+           | sed -e 's#^.*\.path ##g')
 
-for KEY in $(git config \
-                 --file .gitmodules \
-                 --name-only \
-                 --get-regexp "^submodule\.(equipment|requires)/.*\.path$"); do
-  update-by-key "$KEY"
-done
-
-update-by-key "submodule..cppsm.path"
+git submodule "${GIT_QUIET[@]}" update --jobs "$N_PARALLEL_UPDATE" --init -- "${MODULES[@]}"

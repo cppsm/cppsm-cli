@@ -17,3 +17,5 @@ if [ "$GIT_QUIET" = 0 ]; then
 else
   GIT_QUIET=(--quiet)
 fi
+
+N_PARALLEL_UPDATE="${N_PARALLEL_UPDATE:-$NUMBER_OF_PROCESSORS}"
