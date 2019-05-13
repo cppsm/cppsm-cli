@@ -8,8 +8,8 @@ if [ "$#" -ne 0 ] || [ ! -e .gitmodules ] ; then
   cat << EOF
 Usage: $CMD
 
-Upgrades all cppsm managed submodules to latest remote versions and runs init to
-update configuration files.
+Upgrades all cppsm managed submodules to latest remote versions and runs cppsm
+init to update configuration files.
 EOF
   exit 1
 fi

@@ -13,10 +13,8 @@ if [ "$#" -ne 3 ] || [ ! -d .git ] || [[ ! "$KIND" =~ ^(requires|equipment)$ ]];
 Usage: $CMD [requires|equipment] url branch
 
 Adds a new cppsm compatible submodule and recursively the submodules it requires
-to the project.
-
-This command is idempotent and can be run to e.g. add new transitive
-dependencies after updating submodules.
+to the project.  This command is idempotent and can be run to e.g. add new
+transitive dependencies after updating submodules.
 EOF
   exit 1
 fi

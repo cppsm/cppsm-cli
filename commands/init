@@ -9,9 +9,8 @@ if [ "$#" -ne 0 ] || [ ! -d .git ]; then
 Usage: $CMD
 
 Initializes a new C++ project with cppsm configuration files or updates an
-existing project to use the latest configuration files.
-
-Run $CMD in the top-level directory of a fresh git project.
+existing project to use the latest configuration files.  Run $CMD in the
+top-level directory of a fresh git project.
 EOF
   exit 1
 fi

@@ -10,9 +10,8 @@ if [ "$#" -ne 1 ] || [ ! -d "$SUBMODULE" ] ; then
   cat << EOF
 Usage: $CMD path
 
-Removes a previously required submodule.
-
-Note that this command does remove submodules transitively.
+Removes a previously required submodule.  Note that this command does not remove
+submodules transitively.
 EOF
   exit 1
 fi

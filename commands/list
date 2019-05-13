@@ -8,10 +8,8 @@ if [ "$#" -ne 0 ] || [ ! -e .gitmodules ] ; then
   cat << EOF
 Usage: $CMD
 
-Prints out a dependency tree of submodules.
-
-This command exits with an error code in case any problems are found in the
-dependency tree.
+Prints out a dependency tree of submodules.  This command exits with an error
+code in case any problems are found in the dependency tree.
 EOF
   exit 1
 fi
