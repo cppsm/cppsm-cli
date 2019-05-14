@@ -79,3 +79,5 @@ add_conventional_executable_tests(PRIVATE message_v1 testing_v1)
 add_conventional_executable(hello)
 target_link_libraries(hello PRIVATE message_v1)
 EOF
+
+git add internals provides

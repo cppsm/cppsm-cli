@@ -10,7 +10,6 @@ git init
 cppsm init
 cppsm hello
 
-git add internals provides
 git config --global user.email "ci@script.com"
 git config --global user.name "CI script"
 git commit -m Initial
