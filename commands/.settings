@@ -1,21 +1,25 @@
 #!/bin/bash -e
 
-if [ "$XTRACE" = 1 ]; then
+set -o pipefail
+
+TRACE="${TRACE:-0}"
+
+if [ "${XTRACE:-$TRACE}" = 1 ]; then
   set -x
 fi
 
-set -o pipefail
-
 export CPPSM="${BASH_SOURCE%/*/*}"
 
-if [ -z "$NUMBER_OF_PROCESSORS" ]; then
-  NUMBER_OF_PROCESSORS=$(getconf _NPROCESSORS_ONLN || echo 2)
-fi
+QUIET="${QUIET:-1}"
 
-if [ "$GIT_QUIET" = 0 ]; then
+if [ "${GIT_QUIET:-$QUIET}" = 0 ]; then
   GIT_QUIET=()
 else
   GIT_QUIET=(--quiet)
+fi
+
+if [ -z "$NUMBER_OF_PROCESSORS" ]; then
+  NUMBER_OF_PROCESSORS=$(getconf _NPROCESSORS_ONLN || echo 2)
 fi
 
 N_PARALLEL_UPDATE="${N_PARALLEL_UPDATE:-$NUMBER_OF_PROCESSORS}"
