@@ -3,5 +3,5 @@
 # shellcheck source=setup
 . "${BASH_SOURCE%/*}/setup"
 
-sh -c "$BUILD_CMD" || true
-"${WATCH_CMD[@]}" | xargs -n1 -I{} sh -c "$BUILD_CMD"
+"${BUILD_CMD[@]}" || true
+"${WATCH_CMD[@]}" | xargs -n1 -I{} "${BUILD_CMD[@]}"

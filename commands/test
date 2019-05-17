@@ -3,4 +3,5 @@
 # shellcheck source=setup
 . "${BASH_SOURCE%/*}/setup"
 
-sh -c "$TEST_CMD"
+"${BUILD_CMD[@]}"
+"${TEST_CMD[@]}"

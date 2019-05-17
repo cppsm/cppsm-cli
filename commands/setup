@@ -42,9 +42,28 @@ cmake-help-contains() {
 
 COVERAGE="${COVERAGE:-0}"
 
+N_PARALLEL_BUILD="${N_PARALLEL_BUILD:-$NUMBER_OF_PROCESSORS}"
+N_PARALLEL_TEST="${N_PARALLEL_TEST:-$NUMBER_OF_PROCESSORS}"
+
+export BUILD_CMD=()
+export TEST_CMD=()
+if command -v nice > /dev/null; then
+  BUILD_CMD+=(nice)
+  TEST_CMD+=(nice)
+fi
+BUILD_CMD+=(cmake --build . --config $CMAKE_BUILD_TYPE --parallel $N_PARALLEL_BUILD --)
+TEST_CMD+=(ctest --build-config $CMAKE_BUILD_TYPE --parallel $N_PARALLEL_TEST)
+
 INIT_CMD=(cmake)
 if cmake-help-contains "Visual Studio" && [ -z "$CXX" ]; then
   DIR=".build"
+
+  if [ "$QUIET" != 0 ]; then
+    MSBUILD_VERBOSITY="${MSBUILD_VERBOSITY:-QUIET}"
+  fi
+  if [ -n "$MSBUILD_VERBOSITY" ]; then
+    BUILD_CMD+=("/VERBOSITY:$MSBUILD_VERBOSITY")
+  fi
 else
   DIR=".build.$CMAKE_BUILD_TYPE${CXX:+.}$CXX"
   INIT_CMD+=("-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE")
@@ -67,14 +86,6 @@ if [[ "$OSTYPE" =~ ^(linux-gnu|msys|cygwin)$ ]]; then
 fi
 
 export CTEST_OUTPUT_ON_FAILURE="${CTEST_OUTPUT_ON_FAILURE:-1}"
-
-if command -v nice > /dev/null; then NICE="nice"; else NICE=""; fi
-
-N_PARALLEL_BUILD="${N_PARALLEL_BUILD:-$NUMBER_OF_PROCESSORS}"
-N_PARALLEL_TEST="${N_PARALLEL_TEST:-$NUMBER_OF_PROCESSORS}"
-
-export BUILD_CMD="$NICE cmake --build . --config $CMAKE_BUILD_TYPE --parallel $N_PARALLEL_BUILD"
-export TEST_CMD="$BUILD_CMD && $NICE ctest --build-config $CMAKE_BUILD_TYPE --parallel $N_PARALLEL_TEST"
 
 CLEAN="${CLEAN:-0}"
 if [ "$CLEAN" = 1 ]; then
