@@ -14,7 +14,7 @@ EOF
   exit 1
 fi
 
-MODULES=()
+MODULES=(.cppsm)
 while IFS='' read -r line; do
   MODULES+=("$line")
 done < <(git config \

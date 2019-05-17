@@ -16,7 +16,7 @@ fi
 
 git pull "${GIT_QUIET[@]}" --rebase
 
-MODULES=()
+MODULES=(.cppsm)
 while IFS='' read -r line; do
   MODULES+=("$line")
 done < <(git config \
