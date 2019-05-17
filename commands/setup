@@ -30,7 +30,7 @@ EOF
   exit 1
 fi
 
-CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
+# Meta -------------------------------------------------------------------------
 
 if (set +x && [ -z "$CMAKE_HELP" ]); then
   CMAKE_HELP="$(cmake --help)"
@@ -40,7 +40,45 @@ cmake-help-contains() {
   (set +x && [[ "$CMAKE_HELP" =~ $1 ]])
 }
 
-COVERAGE="${COVERAGE:-0}"
+# Generate ---------------------------------------------------------------------
+
+BUILD_DIR=".build"
+
+CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
+
+GENERATE_CMD=(cmake)
+if ! cmake-help-contains "Visual Studio" || [ -n "$CXX" ]; then
+  COVERAGE="${COVERAGE:-0}"
+  if [ "$COVERAGE" = 1 ]; then
+    BUILD_DIR="$BUILD_DIR.coverage"
+    GENERATE_CMD+=("-DCOVERAGE=ON")
+  fi
+
+  BUILD_DIR="$BUILD_DIR.$CMAKE_BUILD_TYPE${CXX:+.}$CXX"
+  GENERATE_CMD+=("-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE")
+
+  if cmake-help-contains "MSYS Makefiles"; then
+    GENERATE_CMD+=("-G" "MSYS Makefiles")
+    export CMAKE_MAKE_PROGRAM="make"
+  fi
+fi
+GENERATE_CMD+=(..)
+
+# Clean
+
+CLEAN="${CLEAN:-0}"
+if [ "$CLEAN" = 1 ]; then
+  rm -rf "$BUILD_DIR"
+fi
+
+# Generate
+
+mkdir -p "$BUILD_DIR" && cd "$_"
+"${GENERATE_CMD[@]}"
+
+# Build and Test ---------------------------------------------------------------
+
+export CTEST_OUTPUT_ON_FAILURE="${CTEST_OUTPUT_ON_FAILURE:-1}"
 
 N_PARALLEL_BUILD="${N_PARALLEL_BUILD:-$NUMBER_OF_PROCESSORS}"
 N_PARALLEL_TEST="${N_PARALLEL_TEST:-$NUMBER_OF_PROCESSORS}"
@@ -51,48 +89,25 @@ if command -v nice > /dev/null; then
   BUILD_CMD+=(nice)
   TEST_CMD+=(nice)
 fi
-BUILD_CMD+=(cmake --build . --config $CMAKE_BUILD_TYPE --parallel $N_PARALLEL_BUILD --)
-TEST_CMD+=(ctest --build-config $CMAKE_BUILD_TYPE --parallel $N_PARALLEL_TEST)
+BUILD_CMD+=(cmake --build . --config "$CMAKE_BUILD_TYPE" --parallel "$N_PARALLEL_BUILD" --)
+TEST_CMD+=(ctest --build-config "$CMAKE_BUILD_TYPE" --parallel "$N_PARALLEL_TEST")
 
-INIT_CMD=(cmake)
 if cmake-help-contains "Visual Studio" && [ -z "$CXX" ]; then
-  DIR=".build"
-
   if [ "$QUIET" != 0 ]; then
     MSBUILD_VERBOSITY="${MSBUILD_VERBOSITY:-QUIET}"
   fi
   if [ -n "$MSBUILD_VERBOSITY" ]; then
     BUILD_CMD+=("/VERBOSITY:$MSBUILD_VERBOSITY")
   fi
-else
-  DIR=".build.$CMAKE_BUILD_TYPE${CXX:+.}$CXX"
-  INIT_CMD+=("-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE")
-
-  if cmake-help-contains "MSYS Makefiles"; then
-    INIT_CMD+=("-G" "MSYS Makefiles")
-    export CMAKE_MAKE_PROGRAM="make"
-  fi
-
-  if [ "$COVERAGE" = 1 ]; then
-    INIT_CMD+=("-DCOVERAGE=ON")
-  fi
 fi
-INIT_CMD+=(..)
+
+# Watch ------------------------------------------------------------------------
 
 export WATCH_CMD=(fswatch --one-per-batch --recursive)
+
 if [[ "$OSTYPE" =~ ^(linux-gnu|msys|cygwin)$ ]]; then
   # The default monitor notifies on read accesses...
   WATCH_CMD+=(--monitor poll_monitor '--latency=5')
 fi
-
-export CTEST_OUTPUT_ON_FAILURE="${CTEST_OUTPUT_ON_FAILURE:-1}"
-
-CLEAN="${CLEAN:-0}"
-if [ "$CLEAN" = 1 ]; then
-  rm -rf "$DIR"
-fi
-
-mkdir -p "$DIR" && cd "$_"
-"${INIT_CMD[@]}"
 
 WATCH_CMD+=(../*)
