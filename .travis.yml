@@ -17,8 +17,7 @@ git:
 
 before_install:
   - export -f travis_nanoseconds travis_time_start travis_time_finish
-  - if [[ $(git version) =~ \ 2\.19\. ]]; then GIT_DEPTH=(--no-recommend-shallow); else GIT_DEPTH=(--depth 1); fi
-  - if ! [ -x ./test ]; then git submodule update --init --recursive "${GIT_DEPTH[@]}" .cppsm; fi
 
 script:
-  - if [ -x ./test ]; then ./test; else .cppsm/.cli/travis-ci; fi
+  - if ! [ -x .cppsm/travis-ci ]; then git submodule --quiet update --init --no-recommend-shallow --depth 1 .cppsm; fi
+  - .cppsm/travis-ci
