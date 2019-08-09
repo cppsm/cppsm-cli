@@ -23,10 +23,13 @@ ln -fs .cppsm/.clang-format .clang-format
 ln -fs .cppsm/.gitignore .gitignore
 ln -fs .cppsm/.prettierrc .prettierrc
 
-cat << EOF > CMakeLists.txt
+if [ ! -e CMakeLists.txt ]; then
+  cat << EOF > CMakeLists.txt
 cmake_minimum_required(VERSION 3.9)
+project(${PWD##*/})
 include(.cppsm/c++17-no-rtti-no-exns.cmake)
 EOF
+fi
 
 cp "$CPPSM/.travis.yml" .travis.yml
 
