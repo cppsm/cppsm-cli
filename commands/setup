@@ -46,7 +46,7 @@ BUILD_DIR=".build"
 
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
 
-GENERATE_CMD=(cmake)
+GENERATE_CMD=(cmake "-Werror=dev" "-Werror=deprecated")
 if ! cmake-help-contains "Visual Studio" || [ -n "$CXX" ]; then
   COVERAGE="${COVERAGE:-0}"
   if [ "$COVERAGE" = 1 ]; then
