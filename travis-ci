@@ -61,8 +61,8 @@ if [ "$TRAVIS_OS_NAME" = linux ]; then
   folded ... concurrently LIBSTD_INSTALL_PID locked bash -c 'sudo -E apt-add-repository -y ppa:ubuntu-toolchain-r/test && sudo -E apt-get -yq update && sudo -E apt-get -yq --no-install-suggests --no-install-recommends install libstdc++-8-dev'
   folded ... concurrently GCC_INSTALL_PID locked sudo -E apt-get -yq --no-install-suggests --no-install-recommends install g++-8
 elif [ "$TRAVIS_OS_NAME" = osx ]; then
-  [ "$CODECOV" != 1 ] || folded ... concurrently LCOV_INSTALL_PID locked brew install lcov
-  [ "$FORMAT_CHECK" = 0 ] || folded ... concurrently FORMAT_INSTALL_PID locked brew install prettier clang-format
+  [ "$CODECOV" != 1 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently LCOV_INSTALL_PID locked brew install lcov
+  [ "$FORMAT_CHECK" = 0 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently FORMAT_INSTALL_PID locked brew install prettier clang-format
 elif [ "$TRAVIS_OS_NAME" = windows ]; then
   folded ... concurrently MAKE_INSTALL_PID locked choco install make
 fi
