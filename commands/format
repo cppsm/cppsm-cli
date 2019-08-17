@@ -15,10 +15,13 @@ EOF
   exit 1
 fi
 
+NO_RUN_IF_EMPTY=()
+if [[ "$OSTYPE" != "darwin"* ]]; then NO_RUN_IF_EMPTY+=(--no-run-if-empty); fi
+
 for ROOT in provides internals ; do
-  find $ROOT -name '*.md' -print0 | xargs -0 prettier --write --
+  find $ROOT -name '*.md' -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 prettier --write --
   for SUFFIX in cpp hpp ; do
-    find $ROOT -name "*.$SUFFIX" -print0 | xargs -0 clang-format -i --
+    find $ROOT -name "*.$SUFFIX" -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 clang-format -i --
   done
 done
 
