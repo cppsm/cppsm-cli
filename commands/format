@@ -18,10 +18,16 @@ fi
 NO_RUN_IF_EMPTY=()
 if [[ "$OSTYPE" != "darwin"* ]]; then NO_RUN_IF_EMPTY+=(--no-run-if-empty); fi
 
+if command -v clang-format-8 > /dev/null ; then
+  CLANG_FORMAT=clang-format-8
+else
+  CLANG_FORMAT=clang-format
+fi
+
 for ROOT in provides internals ; do
   find $ROOT -name '*.md' -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 prettier --write --
   for SUFFIX in cpp hpp ; do
-    find $ROOT -name "*.$SUFFIX" -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 clang-format -i --
+    find $ROOT -name "*.$SUFFIX" -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 $CLANG_FORMAT -i --
   done
 done
 
