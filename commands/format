@@ -22,4 +22,4 @@ for ROOT in provides internals ; do
   done
 done
 
-find . -name '*.md' -maxdepth 1 -print0 | xargs -0 prettier --write --
+find . -maxdepth 1 -name '*.md' -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 prettier --write --
