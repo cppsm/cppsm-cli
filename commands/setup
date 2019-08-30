@@ -11,6 +11,7 @@ Usage: [option=value ...] $CMD
 Options:
 
   CMAKE_BUILD_TYPE=Debug|Release
+  CMAKE_GENERATOR=|...
 
   CTEST_OUTPUT_ON_FAILURE=1|0
 
@@ -57,8 +58,13 @@ if ! cmake-help-contains "Visual Studio" || [ -n "$CXX" ]; then
   BUILD_DIR="$BUILD_DIR.$CMAKE_BUILD_TYPE${CXX:+.}$CXX"
   GENERATE_CMD+=("-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE")
 
-  if cmake-help-contains "MSYS Makefiles"; then
-    GENERATE_CMD+=("-G" "MSYS Makefiles")
+  if cmake-help-contains "MSYS Makefiles" && [ -z "$CMAKE_GENERATOR" ] ; then
+    CMAKE_GENERATOR="MSYS Makefiles"
+  fi
+fi
+if [ -n "$CMAKE_GENERATOR" ]; then
+  BUILD_DIR="$BUILD_DIR.${CMAKE_GENERATOR// /_}"
+  if [ "$CMAKE_GENERATOR" = "MSYS Makefiles" ]; then
     export CMAKE_MAKE_PROGRAM="make"
   fi
 fi
