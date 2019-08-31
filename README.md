@@ -1,4 +1,4 @@
-# C++ submodule manager command-line interface &middot; [![Gitter](https://badges.gitter.im/cppsm/community.svg)](https://gitter.im/cppsm/community)
+# C++ submodule manager command-line interface [![Gitter](https://badges.gitter.im/cppsm/community.svg)](https://gitter.im/cppsm/community)
 
 Command-line interface for the
 [C++ submodule manager](https://cppsm.github.io/).
