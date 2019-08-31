@@ -59,11 +59,13 @@ if ! cmake-help-contains "Visual Studio" || [ -n "$CXX" ]; then
   GENERATE_CMD+=("-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE")
 
   if cmake-help-contains "MSYS Makefiles" && [ -z "$CMAKE_GENERATOR" ] ; then
-    CMAKE_GENERATOR="MSYS Makefiles"
+    export CMAKE_GENERATOR="MSYS Makefiles"
   fi
 fi
 if [ -n "$CMAKE_GENERATOR" ]; then
   BUILD_DIR="$BUILD_DIR.${CMAKE_GENERATOR// /_}"
+  GENERATE_CMD+=("-G" "$CMAKE_GENERATOR")
+
   if [ "$CMAKE_GENERATOR" = "MSYS Makefiles" ]; then
     export CMAKE_MAKE_PROGRAM="make"
   fi
