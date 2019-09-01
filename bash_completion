@@ -1,5 +1,13 @@
 #!/bin/bash -e
 
+if ! command -v curl > /dev/null; then
+  >&2 echo "WARNING: Could not find curl ( https://curl.haxx.se/ )."
+fi
+
+if ! command -v jq > /dev/null; then
+  >&2 echo "WARNING: Could not find jq ( https://stedolan.github.io/jq/ )."
+fi
+
 __cppsm_complete() {
   local IFS=$' \t\n'
   COMPREPLY=()
@@ -17,24 +25,22 @@ __cppsm_complete() {
       COMPREPLY=($(compgen -W "equipment requires" -- "$CURRENT"))
       ;;
     clone)
-      if command -v jq > /dev/null && command -v curl > /dev/null && command -v sed > /dev/null; then
+      if command -v jq > /dev/null && command -v curl > /dev/null; then
         # shellcheck disable=SC2207
         COMPREPLY=($(curl -s "https://api.github.com/search/repositories?q=topic:cppsm+${CURRENT##*/}" | \
                        jq '.items | .[] | .ssh_url'))
       fi
       ;;
     equipment|requires)
-      if command -v jq > /dev/null && command -v curl > /dev/null && command -v sed > /dev/null; then
+      if command -v jq > /dev/null && command -v curl > /dev/null; then
         # shellcheck disable=SC2207
         COMPREPLY=($(curl -s "https://api.github.com/search/repositories?q=topic:cppsm+${CURRENT##*/}" | \
                        jq '.items | .[] | .clone_url'))
       fi
       ;;
     https:*.git|git*.git)
-      if command -v sed > /dev/null; then
-        # shellcheck disable=SC2207
-        COMPREPLY=($(git ls-remote --heads "$PREVIOUS" | sed -e 's#[^ ]*\s*refs/heads/##g'))
-      fi
+      # shellcheck disable=SC2207
+      COMPREPLY=($(git ls-remote --heads "$PREVIOUS" | sed -e 's#[^ ]*\s*refs/heads/##g'))
       ;;
     *)
       ;;
