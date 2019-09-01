@@ -18,17 +18,27 @@ fi
 NO_RUN_IF_EMPTY=()
 if [[ "$OSTYPE" != "darwin"* ]]; then NO_RUN_IF_EMPTY+=(--no-run-if-empty); fi
 
-if command -v clang-format-8 > /dev/null ; then
-  CLANG_FORMAT=clang-format-8
-else
-  CLANG_FORMAT=clang-format
+if [ -z "$CLANG_FORMAT" ]; then
+  if command -v clang-format-8 > /dev/null ; then
+    CLANG_FORMAT=clang-format-8
+  elif command -v clang-format > /dev/null ; then
+    CLANG_FORMAT=clang-format
+  else
+    >&2 echo "WARNING: Could not find clang-format ( https://clang.llvm.org/docs/ClangFormat.html )."
+  fi
 fi
 
-for ROOT in provides internals ; do
-  find $ROOT -name '*.md' -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 prettier --write --
+if [ -z "$PRETTIER" ] && command -v prettier > /dev/null; then
+  PRETTIER=prettier
+else
+  >&2 echo "WARNING: Could not find prettier ( https://prettier.io/ )."
+fi
+
+for ROOT in provides internals; do
+  [ -z "$PRETTIER" ] || find $ROOT -name '*.md' -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 "$PRETTIER" --write --
   for SUFFIX in cpp hpp ; do
-    find $ROOT -name "*.$SUFFIX" -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 $CLANG_FORMAT -i --
+    [ -z "$CLANG_FORMAT" ] || find $ROOT -name "*.$SUFFIX" -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 "$CLANG_FORMAT" -i --
   done
 done
 
-find . -maxdepth 1 -name '*.md' -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 prettier --write --
+[ -z "$PRETTIER" ] || find . -maxdepth 1 -name '*.md' -print0 | xargs "${NO_RUN_IF_EMPTY[@]}" -0 "$PRETTIER" --write --
