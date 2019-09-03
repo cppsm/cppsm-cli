@@ -43,33 +43,51 @@ cmake-help-contains() {
 
 # Generate ---------------------------------------------------------------------
 
+GENERATE_CMD=(cmake "-Werror=dev" "-Werror=deprecated")
 BUILD_DIR=".build"
 
-CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
+# Compiler
 
-GENERATE_CMD=(cmake "-Werror=dev" "-Werror=deprecated")
-if ! cmake-help-contains "Visual Studio" || [ -n "$CXX" ]; then
-  COVERAGE="${COVERAGE:-0}"
-  if [ "$COVERAGE" = 1 ]; then
-    BUILD_DIR="$BUILD_DIR.coverage"
-    GENERATE_CMD+=("-DCOVERAGE=ON")
-  fi
-
-  BUILD_DIR="$BUILD_DIR.$CMAKE_BUILD_TYPE${CXX:+.}$CXX"
-  GENERATE_CMD+=("-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE")
-
-  if cmake-help-contains "MSYS Makefiles" && [ -z "$CMAKE_GENERATOR" ] ; then
-    export CMAKE_GENERATOR="MSYS Makefiles"
-  fi
+if [ -n "$CXX" ]; then
+  BUILD_DIR="$BUILD_DIR.$CXX"
 fi
+
+# Generator
+
+if [ -n "$CXX" ] && [ -z "$CMAKE_GENERATOR" ] \
+     && cmake-help-contains "MSYS Makefiles"; then
+  export CMAKE_GENERATOR="MSYS Makefiles"
+fi
+
+if [ "$CMAKE_GENERATOR" = "MSYS Makefiles" ]; then
+  export CMAKE_MAKE_PROGRAM="make"
+fi
+
 if [ -n "$CMAKE_GENERATOR" ]; then
   BUILD_DIR="$BUILD_DIR.${CMAKE_GENERATOR// /_}"
   GENERATE_CMD+=("-G" "$CMAKE_GENERATOR")
-
-  if [ "$CMAKE_GENERATOR" = "MSYS Makefiles" ]; then
-    export CMAKE_MAKE_PROGRAM="make"
-  fi
 fi
+
+# Build type
+
+CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:-Debug}"
+
+if [[ "$CMAKE_GENERATOR" =~ Makefiles|Ninja ]] || \
+     ([ -z "$CMAKE_GENERATOR" ] && ! cmake-help-contains 'Visual Studio'); then
+  BUILD_DIR="$BUILD_DIR.$CMAKE_BUILD_TYPE"
+  GENERATE_CMD+=("-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE")
+fi
+
+# Coverage
+
+COVERAGE="${COVERAGE:-0}"
+if [ "$COVERAGE" = 1 ]; then
+  BUILD_DIR="$BUILD_DIR.coverage"
+  GENERATE_CMD+=("-DCOVERAGE=ON")
+fi
+
+# Finish
+
 GENERATE_CMD+=(..)
 
 # Clean
@@ -100,12 +118,24 @@ fi
 BUILD_CMD+=(cmake --build . --config "$CMAKE_BUILD_TYPE" --parallel "$N_PARALLEL_BUILD" --)
 TEST_CMD+=(ctest --build-config "$CMAKE_BUILD_TYPE" --parallel "$N_PARALLEL_TEST")
 
-if cmake-help-contains "Visual Studio" && [ -z "$CXX" ]; then
+# Quiet
+
+if [[ "$CMAKE_GENERATOR" =~ 'Visual Studio' ]] || \
+     ([ -z "$CMAKE_GENERATOR" ] && cmake-help-contains "Visual Studio"); then
   if [ "$QUIET" != 0 ]; then
     MSBUILD_VERBOSITY="${MSBUILD_VERBOSITY:-QUIET}"
   fi
   if [ -n "$MSBUILD_VERBOSITY" ]; then
     BUILD_CMD+=("/VERBOSITY:$MSBUILD_VERBOSITY")
+  fi
+fi
+
+if [[ "$CMAKE_GENERATOR" =~ Xcode ]]; then
+  if [ "$QUIET" != 0 ]; then
+    XCODE_VERBOSITY="${XCODE_VERBOSITY:-quiet}"
+  fi
+  if [ -n "$XCODE_VERBOSITY" ]; then
+    BUILD_CMD+=("-$XCODE_VERBOSITY")
   fi
 fi
 
