@@ -15,8 +15,21 @@ EOF
   exit 1
 fi
 
+if [ -n "$TRAVIS_BRANCH" ]; then
+  CLI_BRANCH="$TRAVIS_BRANCH"
+else
+  CLI_BRANCH=$(git -C "${BASH_SOURCE%/*}" rev-parse --abbrev-ref HEAD)
+fi
+
+BOILERPLATE_URL="https://github.com/cppsm/cppsm-boilerplate.git"
+
 if [ ! -d .cppsm ]; then
-  git submodule "${GIT_QUIET[@]}" add --branch master https://github.com/cppsm/cppsm-boilerplate.git .cppsm
+  if git ls-remote --heads "$BOILERPLATE_URL" | grep -q "\brefs/heads/$CLI_BRANCH\$"; then
+    BOILERPLATE_BRANCH="$CLI_BRANCH"
+  else
+    BOILERPLATE_BRANCH="master"
+  fi
+  git submodule "${GIT_QUIET[@]}" add --branch "$BOILERPLATE_BRANCH" "$BOILERPLATE_URL" .cppsm
 fi
 
 ln -fs .cppsm/.clang-format .clang-format
@@ -27,7 +40,7 @@ if [ ! -e CMakeLists.txt ]; then
   cat << EOF > CMakeLists.txt
 cmake_minimum_required(VERSION 3.9)
 project(${PWD##*/})
-include(.cppsm/c++17-no-rtti-no-exns.cmake)
+include(.cppsm/c++17.cmake)
 EOF
 fi
 
