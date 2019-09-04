@@ -14,6 +14,7 @@ Options:
   CMAKE_GENERATOR=|...
 
   CTEST_OUTPUT_ON_FAILURE=1|0
+  CTEST_VERBOSITY=|quiet|verbose
 
   CC=cc|gcc|clang|...
   CXX=c++|g++|clang++|...
@@ -137,6 +138,10 @@ if [[ "$CMAKE_GENERATOR" =~ Xcode ]]; then
   if [ -n "$XCODE_VERBOSITY" ]; then
     BUILD_CMD+=("-$XCODE_VERBOSITY")
   fi
+fi
+
+if [ -n "$CTEST_VERBOSITY" ]; then
+  TEST_CMD+=("--$CTEST_VERBOSITY")
 fi
 
 # Watch ------------------------------------------------------------------------
