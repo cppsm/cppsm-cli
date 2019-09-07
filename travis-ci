@@ -27,11 +27,15 @@ fi
 
 finish() {
   if [ -f "$TMP.$1" ]; then
+    local EXIT=0
     tail -n 1000 -f "$TMP.$1" &
     local PID=$!
-    wait "${!1}"
+    if ! wait "${!1}"; then
+      EXIT=$?
+    fi
     kill -9 $PID
     rm -f "$TMP.$1"
+    return $EXIT
   fi
 }
 
