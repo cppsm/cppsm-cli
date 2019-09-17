@@ -38,7 +38,7 @@ ln -fs .cppsm/.prettierrc .prettierrc
 
 if [ ! -e CMakeLists.txt ]; then
   cat << EOF > CMakeLists.txt
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.10)
 project(${PWD##*/})
 include(.cppsm/c++17.cmake)
 EOF
