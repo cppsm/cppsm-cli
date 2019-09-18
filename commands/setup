@@ -84,7 +84,7 @@ fi
 COVERAGE="${COVERAGE:-0}"
 if [ "$COVERAGE" = 1 ]; then
   BUILD_DIR="$BUILD_DIR.coverage"
-  GENERATE_CMD+=("-DCOVERAGE=ON")
+  GENERATE_CMD+=("-DCPPSM_COVERAGE=ON")
 fi
 
 # Finish
