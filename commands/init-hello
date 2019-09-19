@@ -1,27 +1,9 @@
 #!/bin/bash -e
 
-# shellcheck source=.settings
-. "${BASH_SOURCE%/*}/.settings"
+# shellcheck source=init
+. "${BASH_SOURCE%/*}/init"
 
-if [ "$#" -ne 0 ] || \
-     [ ! -f CMakeLists.txt ] || \
-     [ -e equipment ] || \
-     [ -e internals ] || \
-     [ -e provides ] || \
-     [ -e requires ] ; then
-  CMD="${0##*/}"
-  cat << EOF
-Usage: $CMD
-
-Creates an example "Hello, world!" program in a freshly initialized project
-directory.
-EOF
-  exit 1
-fi
-
-mkdir -p provides/include/message_v1
-
-cat << EOF > provides/include/message_v1/hello.hpp
+add-file provides/include/message_v1/hello.hpp << EOF
 #include <string>
 
 namespace message_v1 {
@@ -31,9 +13,7 @@ std::string hello(const std::string &to);
 }
 EOF
 
-mkdir -p provides/library
-
-cat << EOF > provides/library/hello.cpp
+add-file provides/library/hello.cpp << EOF
 #include "message_v1/hello.hpp"
 
 std::string message_v1::hello(const std::string &to) {
@@ -41,15 +21,13 @@ std::string message_v1::hello(const std::string &to) {
 }
 EOF
 
-cat << EOF > provides/CMakeLists.txt
+add-file provides/CMakeLists.txt << EOF
 add_conventional_library(message_v1)
 EOF
 
 "$CPPSM/commands/add" equipment https://github.com/per-framework/testing.cpp.git v1
 
-mkdir -p internals/testing
-
-cat << EOF > internals/testing/message_test.cpp
+add-file internals/testing/message_test.cpp << EOF
 #include "message_v1/hello.hpp"
 
 #include "testing_v1/test.hpp"
@@ -60,9 +38,7 @@ auto hello_test =
     test([]() { verify("Hello, there!" == message_v1::hello("there")); });
 EOF
 
-mkdir -p internals/program
-
-cat << EOF > internals/program/hello.cpp
+add-file internals/program/hello.cpp << EOF
 #include "message_v1/hello.hpp"
 
 #include <iostream>
@@ -73,11 +49,9 @@ int main() {
 }
 EOF
 
-cat << EOF > internals/CMakeLists.txt
+add-file internals/CMakeLists.txt << EOF
 add_conventional_executable_tests(PRIVATE message_v1 testing_v1)
 
 add_conventional_executable(hello)
 target_link_libraries(hello PRIVATE message_v1)
 EOF
-
-git add internals provides

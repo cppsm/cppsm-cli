@@ -3,10 +3,21 @@
 # shellcheck source=.settings
 . "${BASH_SOURCE%/*}/.settings"
 
-if [ "$#" -ne 0 ] || [ ! -d .git ]; then
+if [ -z "$NAME" ]; then
+  export NAME="${PWD##*/}"
+fi
+export VERSION="${VERSION:-v1}"
+
+if [ "$#" -ne 0 ] || [ ! -d .git ] || \
+     [ "$NAME" != "$(echo "$NAME" | grep -o '^[a-zA-Z0-9_]\+')" ] ; then
   CMD="${0##*/}"
   cat << EOF
 Usage: $CMD
+
+Options:
+
+  NAME=$NAME|...
+  VERSION=$VERSION|...
 
 Initializes a new C++ project with cppsm configuration files or updates an
 existing project to use the latest configuration files.  Run $CMD in the
@@ -36,13 +47,19 @@ ln -fs .cppsm/.clang-format .clang-format
 ln -fs .cppsm/.gitignore .gitignore
 ln -fs .cppsm/.prettierrc .prettierrc
 
-if [ ! -e CMakeLists.txt ]; then
-  cat << EOF > CMakeLists.txt
+add-file() {
+  if [[ "$1" =~ / ]]; then mkdir -p "${1%/*}"; fi
+  if [ ! -e "$1" ]; then
+    cat > "$1"
+    git add "$1"
+  fi
+}
+
+add-file CMakeLists.txt << EOF
 cmake_minimum_required(VERSION 3.10)
-project(${PWD##*/})
+project($NAME)
 include(.cppsm/c++17.cmake)
 EOF
-fi
 
 cp "$CPPSM/.travis.yml" .travis.yml
 
@@ -50,5 +67,4 @@ git add \
     .clang-format \
     .gitignore \
     .prettierrc \
-    .travis.yml \
-    CMakeLists.txt
+    .travis.yml

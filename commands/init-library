@@ -1,0 +1,38 @@
+#!/bin/bash -e
+
+# shellcheck source=init
+. "${BASH_SOURCE%/*}/init"
+
+if [ -z "$VERSION" ]; then
+  FULL_NAME="${NAME}"
+else
+  FULL_NAME="${NAME}_${VERSION}"
+fi
+
+# Library boilerplate
+
+add-file provides/CMakeLists.txt << EOF
+add_conventional_library($FULL_NAME)
+EOF
+
+add-file "provides/include/$FULL_NAME/synopsis.hpp" << EOF
+#pragma once
+
+namespace $FULL_NAME {
+
+// TODO
+
+}
+EOF
+
+# Testing boilerplate
+
+add-file internals/CMakeLists.txt << EOF
+add_conventional_executable_tests(PRIVATE $FULL_NAME)
+EOF
+
+add-file internals/testing/compile_synopsis_test.cpp << EOF
+#include "$FULL_NAME/synopsis.hpp"
+
+int main() { return 0; }
+EOF

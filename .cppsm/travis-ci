@@ -5,14 +5,29 @@ export PATH="$PWD/bin:$PATH"
 # shellcheck source=../commands/.settings
 . commands/.settings
 
-mkdir self-test && cd "$_"
+# git config
 
-git init
-cppsm init
-cppsm hello
-
+git config --global core.autocrlf false
 git config --global user.email "ci@script.com"
 git config --global user.name "CI script"
+
+# init-library
+
+mkdir library && cd "$_"
+
+git init
+cppsm init-library
+CXX='' CC='' cppsm test
+
+cd ..
+
+# self test
+
+mkdir hello && cd "$_"
+
+git init
+cppsm init-hello
+
 git commit -m Initial
 
 ../travis-ci
