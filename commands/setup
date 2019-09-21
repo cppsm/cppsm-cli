@@ -146,7 +146,7 @@ fi
 
 # Watch ------------------------------------------------------------------------
 
-export WATCH_CMD=(fswatch --one-per-batch --recursive)
+export WATCH_CMD=(watch --one-per-batch --recursive)
 
 if [[ "$OSTYPE" =~ ^(linux-gnu|msys|cygwin)$ ]]; then
   # The default monitor notifies on read accesses...
@@ -154,3 +154,10 @@ if [[ "$OSTYPE" =~ ^(linux-gnu|msys|cygwin)$ ]]; then
 fi
 
 WATCH_CMD+=(../*)
+
+watch() {
+  if ! command -v fswatch > /dev/null; then
+    >&2 echo "WARNING: Could not find fswatch ( http://emcrisostomo.github.io/fswatch/ )."
+  fi
+  fswatch "$@"
+}
