@@ -44,7 +44,7 @@ cmake-help-contains() {
 
 # Generate ---------------------------------------------------------------------
 
-GENERATE_CMD=(cmake "-Werror=dev" "-Werror=deprecated" "-DCPPSM=1")
+GENERATE_CMD=(cmake "-Werror=dev" "-Werror=deprecated")
 BUILD_DIR=".build"
 
 # Compiler
