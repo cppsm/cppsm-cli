@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+cat << EOF > CMakeLists.txt
+cmake_minimum_required(VERSION 3.10)
+project(subdir_test)
+add_subdirectory(subdir)
+EOF
+
+mkdir subdir && cd "$_"
+git init
+cppsm init-hello
+
+mkdir ../.build && cd "$_"
+cmake ..
+cmake --build .
+
+if [ -n "$(find . -name "message_test*")" ]; then exit 1; fi

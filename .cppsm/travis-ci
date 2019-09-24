@@ -11,58 +11,37 @@ git config --global core.autocrlf false
 git config --global user.email "ci@script.com"
 git config --global user.name "CI script"
 
-# init-library
+# Run tests
 
-mkdir library && cd "$_"
+folded() {
+  FOLD=$((FOLD+1))
+  echo -e "travis_fold:start:cppsm.$FOLD\033[33;1m$1\033[0m"
+  travis_time_start
+  shift
+  echo "$@"
+  "$@"
+  travis_time_finish
+  echo -e "\ntravis_fold:end:cppsm.$FOLD\r"
+}
 
-git init
-cppsm init-library
-CXX='' CC='' cppsm test
+run-test() {
+  mkdir "$NAME"
+  pushd "$NAME" > /dev/null
+  "../$TEST"
+  popd
+}
 
-cd ..
+for TEST in .cppsm/testing/* ; do
+  NAME="${TEST##*/}"
+  folded "$NAME" run-test
+done
 
-# add_subdirectory test
+# Test travis-ci script
 
-mkdir -p subdir/hello && cd "$_"
-
-git init
-cppsm init-hello
-
-cd ..
-cat << EOF > CMakeLists.txt
-cmake_minimum_required(VERSION 3.10)
-project(subdir_test)
-add_subdirectory(hello)
-EOF
-
-mkdir .build && cd "$_"
-cmake ..
-cmake --build .
-
-if [ -n "$(find . -name "message_test*")" ]; then exit 1; fi
-
-cd ../..
-
-# self test
-
-mkdir hello && cd "$_"
+mkdir travis_ci_test && cd "$_"
 
 git init
 cppsm init-hello
-
 git commit -m Initial
 
 ../travis-ci
-
-git submodule --quiet add -b v1 https://github.com/per-framework/dumpster.cpp.git equipment/dumpster.cpp/v1
-cppsm add equipment https://github.com/per-framework/dumpster.cpp.git v1
-cppsm add requires https://github.com/per-framework/dumpster.cpp.git v1
-cppsm add equipment https://github.com/per-framework/dumpster.cpp.git v1
-
-cppsm list
-
-cppsm remove requires/polyfill.cpp/v1
-
-if cppsm list; then
-  exit 1
-fi
