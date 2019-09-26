@@ -3,13 +3,26 @@
 # shellcheck source=.settings
 . "${BASH_SOURCE%/*}/.settings"
 
-if [ -z "$NAME" ]; then
-  export NAME="${PWD##*/}"
-fi
-export VERSION="${VERSION:-v1}"
+to-cpp() {
+  echo "$1" | sed -e 's#[^a-zA-Z0-9_]#_#g' -e 's#__*#_#g' -e 's#^_##' -e 's#_$##'
+}
 
-if [ "$#" -ne 0 ] || [ ! -d .git ] || \
-     [ "$NAME" != "$(echo "$NAME" | grep -o '^[a-zA-Z0-9_]\+')" ] ; then
+if [ -z "$NAME" ]; then
+  NAME="${PWD##*/}"
+fi
+NAME="$(to-cpp "$NAME")"
+
+if [ -z "$VERSION" ]; then
+  if git symbolic-ref --short HEAD > /dev/null 2>&1; then
+    VERSION="$(git symbolic-ref --short HEAD)"
+  fi
+fi
+if [ -z "$VERSION" ]; then
+  VERSION="v1"
+fi
+VERSION="$(to-cpp "$VERSION")"
+
+if [ "$#" -ne 0 ]; then
   CMD="${0##*/}"
   cat << EOF
 Usage: $CMD
@@ -19,11 +32,18 @@ Options:
   NAME=$NAME|...
   VERSION=$VERSION|...
 
-Initializes a new C++ project with cppsm configuration files or updates an
-existing project to use the latest configuration files.  Run $CMD in the
-top-level directory of a fresh git project.
+Initializes a new project with cppsm configuration files when run in an empty
+directory or updates an existing project to use the latest configuration files.
 EOF
   exit 1
+fi
+
+if [ ! -e .git ] || [ -z "$NAME" ] || [ -z "$VERSION" ]; then
+  git init
+fi
+
+if [ "$(git symbolic-ref --short HEAD)" != "$VERSION" ]; then
+  git checkout -b "$VERSION"
 fi
 
 if [ -n "$TRAVIS_BRANCH" ]; then
@@ -43,15 +63,31 @@ if [ ! -d .cppsm ]; then
   git submodule "${GIT_QUIET[@]}" add --branch "$BOILERPLATE_BRANCH" "$BOILERPLATE_URL" .cppsm
 fi
 
-ln -fs .cppsm/.clang-format .clang-format
-ln -fs .cppsm/.gitignore .gitignore
-ln -fs .cppsm/.prettierrc .prettierrc
+create-parent-dir() {
+  local FILE="$1"
+  if [[ "$FILE" =~ / ]]; then mkdir -p "${FILE%/*}"; fi
+}
+
+add-link() {
+  local FILE="$1"
+  local LINK="$2"
+  if [ ! -e "$LINK" ]; then
+    create-parent-dir "$LINK"
+    ln -fs "$FILE" "$LINK"
+    git add "$LINK"
+  fi
+}
+
+add-link .cppsm/.clang-format .clang-format
+add-link .cppsm/.gitignore .gitignore
+add-link .cppsm/.prettierrc .prettierrc
 
 add-file() {
-  if [[ "$1" =~ / ]]; then mkdir -p "${1%/*}"; fi
-  if [ ! -e "$1" ]; then
-    cat > "$1"
-    git add "$1"
+  local FILE="$1"
+  if [ ! -e "$FILE" ]; then
+    create-parent-dir "$FILE"
+    cat > "$FILE"
+    git add "$FILE"
   fi
 }
 
@@ -61,10 +97,4 @@ project($NAME)
 include(.cppsm/c++17.cmake)
 EOF
 
-cp "$CPPSM/.travis.yml" .travis.yml
-
-git add \
-    .clang-format \
-    .gitignore \
-    .prettierrc \
-    .travis.yml
+add-file .travis.yml < "$CPPSM/.travis.yml"

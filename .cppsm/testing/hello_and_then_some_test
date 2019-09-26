@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 git init
-cppsm init-hello
+VERSION=v1 cppsm init-hello
 
 git commit -m Initial
 

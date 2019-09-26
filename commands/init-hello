@@ -3,10 +3,10 @@
 # shellcheck source=init
 . "${BASH_SOURCE%/*}/init"
 
-add-file provides/include/message_v1/hello.hpp << EOF
+add-file "provides/include/message_${VERSION}/hello.hpp" << EOF
 #include <string>
 
-namespace message_v1 {
+namespace message_${VERSION} {
 
 std::string hello(const std::string &to);
 
@@ -14,44 +14,44 @@ std::string hello(const std::string &to);
 EOF
 
 add-file provides/library/hello.cpp << EOF
-#include "message_v1/hello.hpp"
+#include "message_${VERSION}/hello.hpp"
 
-std::string message_v1::hello(const std::string &to) {
+std::string message_${VERSION}::hello(const std::string &to) {
   return "Hello, " + to + "!";
 }
 EOF
 
 add-file provides/CMakeLists.txt << EOF
-add_conventional_library(message_v1)
+add_conventional_library(message_${VERSION})
 EOF
 
 "$CPPSM/commands/add" equipment https://github.com/per-framework/testing.cpp.git v1
 
 add-file internals/testing/message_test.cpp << EOF
-#include "message_v1/hello.hpp"
+#include "message_${VERSION}/hello.hpp"
 
 #include "testing_v1/test.hpp"
 
 using namespace testing_v1;
 
 auto hello_test =
-    test([]() { verify("Hello, there!" == message_v1::hello("there")); });
+    test([]() { verify("Hello, there!" == message_${VERSION}::hello("there")); });
 EOF
 
 add-file internals/program/hello.cpp << EOF
-#include "message_v1/hello.hpp"
+#include "message_${VERSION}/hello.hpp"
 
 #include <iostream>
 
 int main() {
-  std::cout << message_v1::hello("world") << std::endl;
+  std::cout << message_${VERSION}::hello("world") << std::endl;
   return 0;
 }
 EOF
 
 add-file internals/CMakeLists.txt << EOF
-add_conventional_executable_tests(PRIVATE message_v1 testing_v1)
+add_conventional_executable_tests(PRIVATE message_${VERSION} testing_v1)
 
 add_conventional_executable(hello)
-target_link_libraries(hello PRIVATE message_v1)
+target_link_libraries(hello PRIVATE message_${VERSION})
 EOF
