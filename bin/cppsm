@@ -4,16 +4,24 @@
 . "${BASH_SOURCE%/*/*}/commands/.settings"
 
 COMMAND="$CPPSM/commands/$1"
-shift
 
-if [ ! -x "$COMMAND" ]; then
+if [ $# = 0 ] || [ ! -x "$COMMAND" ]; then
   # shellcheck disable=SC2035
   COMMANDS="$(cd "$CPPSM/commands" && echo *)"
   COMMANDS="${COMMANDS// /|}"
   cat << EOF
 Usage: ${0##*/} [$COMMANDS]
+
+Run any command with --help to see a brief description of the command.
+
+Visit https://cppsm.github.io/ for full documentation.
+
+Branch: $(git -C "$CPPSM" symbolic-ref --short HEAD)
+$(git -C "$CPPSM" log -n 5 --pretty=oneline --abbrev-commit | sed 's#^#  #g')
+
 EOF
   exit 1
 fi
 
+shift
 "$COMMAND" "$@"
