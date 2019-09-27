@@ -7,9 +7,11 @@ export PATH="$PWD/bin:$PATH"
 
 # git config
 
-git config --global core.autocrlf false
-git config --global user.email "ci@script.com"
-git config --global user.name "CI script"
+if [ "$TRAVIS" = true ]; then
+  git config --global core.autocrlf false
+  git config --global user.email "ci@script.com"
+  git config --global user.name "CI script"
+fi
 
 # Run tests
 
