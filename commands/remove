@@ -5,7 +5,7 @@
 
 SUBMODULE="${1%/}"
 
-if [ "$#" -ne 1 ] || [ ! -d "$SUBMODULE" ] ; then
+if [ $# -ne 1 ] || [ ! -d "$SUBMODULE" ]; then
   CMD="${0##*/}"
   cat << EOF
 Usage: $CMD path

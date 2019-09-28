@@ -3,7 +3,7 @@
 # shellcheck source=.settings
 . "${BASH_SOURCE%/*}/.settings"
 
-if [ "$#" -ne 2 ]; then
+if [ $# -ne 2 ]; then
   CMD="${0##*/}"
   cat << EOF
 Usage: $CMD url branch

@@ -3,7 +3,7 @@
 # shellcheck source=.settings
 . "${BASH_SOURCE%/*}/.settings"
 
-if [ "$#" -ne 0 ] || [ ! -f CMakeLists.txt ]; then
+if [ $# -ne 0 ] || [ ! -f CMakeLists.txt ]; then
   CMD="${0##*/}"
   cat << EOF
 Usage: [option=value ...] $CMD

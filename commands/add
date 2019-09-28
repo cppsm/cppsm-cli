@@ -7,7 +7,7 @@ KIND="${1%/}"
 URL="$2"
 BRANCH="$3"
 
-if [ "$#" -ne 3 ] || [ ! -d .git ] || [[ ! "$KIND" =~ ^(requires|equipment)$ ]]; then
+if [ $# -ne 3 ] || [ ! -d .git ] || [[ ! "$KIND" =~ ^(requires|equipment)$ ]]; then
   CMD="${0##*/}"
   cat << EOF
 Usage: $CMD [requires|equipment] url branch

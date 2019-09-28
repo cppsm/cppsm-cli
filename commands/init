@@ -22,7 +22,7 @@ if [ -z "$VERSION" ]; then
 fi
 VERSION="$(to-cpp "$VERSION")"
 
-if [ "$#" -ne 0 ]; then
+if [ $# -ne 0 ]; then
   CMD="${0##*/}"
   cat << EOF
 Usage: $CMD
