@@ -6,6 +6,20 @@
 COMMAND="$CPPSM/commands/$1"
 
 if [ $# = 0 ] || [ ! -x "$COMMAND" ]; then
+  BRANCH="$(git -C "$CPPSM" symbolic-ref --short HEAD)"
+
+  ORIGIN="$(git -C "$CPPSM" log --pretty=oneline --abbrev-commit "..origin/$BRANCH" | sed 's#^#  #g')"
+  if [ -n "$ORIGIN" ]; then
+    ORIGIN="$(cat << EOF
+
+Origin:
+$ORIGIN
+EOF
+)"
+  fi
+
+  git -C "$CPPSM" fetch --quiet
+
   # shellcheck disable=SC2035
   COMMANDS="$(cd "$CPPSM/commands" && echo *)"
   COMMANDS="${COMMANDS// /|}"
@@ -16,9 +30,9 @@ Run any command with --help to see a brief description of the command.
 
 Visit https://cppsm.github.io/ for full documentation.
 
-Branch: $(git -C "$CPPSM" symbolic-ref --short HEAD)
+Branch: $BRANCH
 $(git -C "$CPPSM" log -n 5 --pretty=oneline --abbrev-commit | sed 's#^#  #g')
-
+$ORIGIN
 EOF
   exit 1
 fi
