@@ -1,0 +1,129 @@
+#!/bin/bash -e
+
+fail() {
+  >&2 cat
+  exit 1
+}
+
+if [ $# -ne 0 ]; then
+  fail << EOF
+Usage: ${0##*/}
+
+Options:
+
+  HTTPS=0|1
+  AUTO_COMPLETION=1|0
+  CONFIRM=0|1
+
+Installs cppsm command by cloning its repository and appending the necessary
+changes to the user's Bash startup script.
+EOF
+fi
+
+if [ -e "$HOME/.cppsm" ]; then
+  fail << EOF
+ERROR: .cppsm already exists in your \$HOME.
+EOF
+fi
+
+contains() {
+  local PATTERN="$1"
+  local FILE="$2"
+  [ -e "$FILE" ] && grep -q -e "$PATTERN" "$FILE"
+}
+
+for SCRIPT in .bash_profile .bashrc; do
+  if contains CPPSM "$HOME/$SCRIPT"; then
+    fail << EOF
+ERROR: CPPSM already appears in your $SCRIPT.
+EOF
+  fi
+  if [ -e "$HOME/$SCRIPT" ]; then
+    TARGET_SCRIPT="$SCRIPT"
+  fi
+done
+
+if [ -z "$TARGET_SCRIPT" ]; then
+  fail << EOF
+ERROR: Neither .bash_profile nor .bashrc exists.
+EOF
+fi
+
+COMMANDS="$(cat << EOF
+CPPSM="\$HOME/.cppsm"
+export PATH="\$CPPSM/bin:\$PATH"
+EOF
+)"
+
+if [ "$AUTO_COMPLETION" != 0 ]; then
+  COMMANDS="$(cat << EOF
+$COMMANDS
+. "\$CPPSM/bash_completion"
+EOF
+)"
+fi
+
+SNIPPET="$(cat << EOF
+# CPPSM lines added by the C++ submodule manager 'install' script.
+# Uninstall by deleting the CPPSM lines and the \$CPPSM directory.
+$COMMANDS
+EOF
+)"
+
+if [ "$HTTPS" = 1 ] || [ "$TRAVIS" = true ]; then
+  URL="https://github.com/cppsm/cppsm-cli.git"
+else
+  URL="git@github.com:cppsm/cppsm-cli.git"
+fi
+
+# shellcheck disable=2001
+cat << EOF
+This will install the C++ submodule manager 'cppsm' command by running
+
+  git clone --quiet $URL "\$HOME/.cppsm"
+
+and appending
+
+$(echo "$SNIPPET" | sed 's#^#  #')
+
+to \$HOME/$TARGET_SCRIPT.
+
+EOF
+
+if [ "$CONFIRM" = 1 ]; then
+  read -p "Continue (y/n)? " -n 1 -r && echo
+  if ! [[ $REPLY =~ ^[Yy]$ ]]; then
+    fail <<EOF
+Installation cancelled.
+EOF
+  fi
+  echo
+fi
+
+if ! git clone --quiet $URL "$HOME/.cppsm"; then
+  fail << EOF
+ERROR: Failed to git clone the cppsm-cli.
+EOF
+fi
+
+augment-script() {
+  cat << EOF >> "$HOME/$TARGET_SCRIPT"
+
+$SNIPPET
+EOF
+}
+
+if ! augment-script; then
+  fail <<EOF
+ERROR: Failed to append to \$HOME/$TARGET_SCRIPT.
+EOF
+fi
+
+cat <<EOF
+C++ submodule manager 'cppsm' command has been installed!
+
+To use the 'cppsm' command you now need to restart the shell or execute the
+following commands in this shell:
+
+$COMMANDS
+EOF

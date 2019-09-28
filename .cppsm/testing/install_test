@@ -1,0 +1,5 @@
+#!/bin/bash
+
+../install
+
+rm -rf "$HOME/.cppsm"
