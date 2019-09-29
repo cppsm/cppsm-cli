@@ -17,6 +17,8 @@ fi
 
 BRANCH="$(git -C "$CPPSM" symbolic-ref --short HEAD)"
 
+git -C "$CPPSM" fetch --quiet
+
 ORIGIN="$(git -C "$CPPSM" log --pretty=oneline --abbrev-commit "..origin/$BRANCH" | sed 's#^#  #g')"
 if [ -n "$ORIGIN" ]; then
   ORIGIN="$(cat << EOF
@@ -32,8 +34,6 @@ to upgrade cppsm.
 EOF
 )"
 fi
-
-git -C "$CPPSM" fetch --quiet
 
 # shellcheck disable=SC2035
 COMMANDS="$(cd "$CPPSM/commands" && echo *)"
