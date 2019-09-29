@@ -80,7 +80,7 @@ fi
 cat << EOF
 This will install the C++ submodule manager 'cppsm' command by running
 
-  git clone --quiet $URL "\$HOME/.cppsm"
+  git clone --quiet --single-branch $URL "\$HOME/.cppsm"
 
 and appending
 
@@ -100,7 +100,7 @@ EOF
   echo
 fi
 
-if ! git clone --quiet $URL "$HOME/.cppsm"; then
+if ! git clone --quiet --single-branch $URL "$HOME/.cppsm"; then
   fail << EOF
 ERROR: Failed to git clone the cppsm-cli.
 EOF
