@@ -5,25 +5,40 @@
 
 COMMAND="$CPPSM/commands/$1"
 
-if [ $# = 0 ] || [ ! -x "$COMMAND" ]; then
-  BRANCH="$(git -C "$CPPSM" symbolic-ref --short HEAD)"
+if [ $# -ge 1 ] && [ -x "$COMMAND" ]; then
+  shift
+  exec "$COMMAND" "$@"
+fi
 
-  ORIGIN="$(git -C "$CPPSM" log --pretty=oneline --abbrev-commit "..origin/$BRANCH" | sed 's#^#  #g')"
-  if [ -n "$ORIGIN" ]; then
-    ORIGIN="$(cat << EOF
+if [ "$UPGRADE" = 1 ]; then
+  echo "Upgrading cppsm..."
+  exec git -C "$CPPSM" pull "${GIT_QUIET[@]}" --rebase
+fi
+
+BRANCH="$(git -C "$CPPSM" symbolic-ref --short HEAD)"
+
+ORIGIN="$(git -C "$CPPSM" log --pretty=oneline --abbrev-commit "..origin/$BRANCH" | sed 's#^#  #g')"
+if [ -n "$ORIGIN" ]; then
+  ORIGIN="$(cat << EOF
 
 Origin:
 $ORIGIN
+
+Run
+
+  UPGRADE=1 ${0##*/}
+
+to upgrade cppsm.
 EOF
 )"
-  fi
+fi
 
-  git -C "$CPPSM" fetch --quiet
+git -C "$CPPSM" fetch --quiet
 
-  # shellcheck disable=SC2035
-  COMMANDS="$(cd "$CPPSM/commands" && echo *)"
-  COMMANDS="${COMMANDS// /|}"
-  cat << EOF
+# shellcheck disable=SC2035
+COMMANDS="$(cd "$CPPSM/commands" && echo *)"
+COMMANDS="${COMMANDS// /|}"
+cat << EOF
 Usage: ${0##*/} [$COMMANDS]
 
 Run any command with --help to see a brief description of the command.
@@ -34,8 +49,4 @@ Branch: $BRANCH
 $(git -C "$CPPSM" log -n 5 --pretty=oneline --abbrev-commit | sed 's#^#  #g')
 $ORIGIN
 EOF
-  exit 1
-fi
-
-shift
-"$COMMAND" "$@"
+exit 1
