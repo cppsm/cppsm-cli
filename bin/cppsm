@@ -17,7 +17,7 @@ fi
 
 BRANCH="$(git -C "$CPPSM" symbolic-ref --short HEAD)"
 
-git -C "$CPPSM" fetch --quiet
+git -C "$CPPSM" fetch "${GIT_QUIET[@]}" origin "$BRANCH"
 
 ORIGIN="$(git -C "$CPPSM" log --pretty=oneline --abbrev-commit "..origin/$BRANCH" | sed 's#^#  #g')"
 if [ -n "$ORIGIN" ]; then
