@@ -1,12 +1,27 @@
 #!/bin/bash -e
 
-if ! command -v curl > /dev/null; then
-  >&2 echo "WARNING: Could not find curl ( https://curl.haxx.se/ )."
+if ! command -v curl > /dev/null && ! command -v wget > /dev/null; then
+  >&2 echo "WARNING: Could not find either curl ( https://curl.haxx.se/ ) or wget ( https://www.gnu.org/software/wget/ )."
 fi
 
 if ! command -v jq > /dev/null; then
   >&2 echo "WARNING: Could not find jq ( https://stedolan.github.io/jq/ )."
 fi
+
+__cppsm_query() {
+  local URL="$1"
+  local QUERY="$2"
+  if command -v jq > /dev/null; then
+    if command -v curl > /dev/null; then
+      local DOWNLOAD_CMD=(curl -s "$URL")
+    elif command -v wget > /dev/null; then
+      local DOWNLOAD_CMD=(wget -qO- "$URL")
+    else
+      return 0
+    fi
+    "${DOWNLOAD_CMD[@]}" | jq "$QUERY"
+  fi
+}
 
 __cppsm_complete() {
   local IFS=$' \t\n'
@@ -25,18 +40,14 @@ __cppsm_complete() {
       COMPREPLY=($(compgen -W "equipment requires" -- "$CURRENT"))
       ;;
     clone)
-      if command -v jq > /dev/null && command -v curl > /dev/null; then
-        # shellcheck disable=SC2207
-        COMPREPLY=($(curl -s "https://api.github.com/search/repositories?q=topic:cppsm+${CURRENT##*/}" | \
-                       jq '.items | .[] | .ssh_url'))
-      fi
+      # shellcheck disable=SC2207
+      COMPREPLY=($(__cppsm_query "https://api.github.com/search/repositories?q=topic:cppsm+${CURRENT##*/}" \
+                                 '.items | .[] | .ssh_url'))
       ;;
     equipment|requires)
-      if command -v jq > /dev/null && command -v curl > /dev/null; then
-        # shellcheck disable=SC2207
-        COMPREPLY=($(curl -s "https://api.github.com/search/repositories?q=topic:cppsm+${CURRENT##*/}" | \
-                       jq '.items | .[] | .clone_url'))
-      fi
+      # shellcheck disable=SC2207
+      COMPREPLY=($(__cppsm_query "https://api.github.com/search/repositories?q=topic:cppsm+${CURRENT##*/}" \
+                                 '.items | .[] | .clone_url'))
       ;;
     https:*.git|git*.git)
       # shellcheck disable=SC2207
