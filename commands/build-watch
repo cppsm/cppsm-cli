@@ -4,4 +4,4 @@
 . "${BASH_SOURCE%/*}/setup"
 
 "${BUILD_CMD[@]}" || true
-"${WATCH_CMD[@]}" | xargs -n1 -I{} "${BUILD_CMD[@]}"
+watch "${BUILD_CMD[*]}"

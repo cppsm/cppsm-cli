@@ -146,18 +146,24 @@ fi
 
 # Watch ------------------------------------------------------------------------
 
-export WATCH_CMD=(watch --one-per-batch --recursive)
-
-if [[ "$OSTYPE" =~ ^(linux-gnu|msys|cygwin)$ ]]; then
-  # The default monitor notifies on read accesses...
-  WATCH_CMD+=(--monitor poll_monitor '--latency=5')
-fi
-
-WATCH_CMD+=(../*)
-
 watch() {
-  if ! command -v fswatch > /dev/null; then
-    >&2 echo "WARNING: Could not find fswatch ( http://emcrisostomo.github.io/fswatch/ )."
+  local COMMAND="$1"
+
+  if command -v fswatch > /dev/null; then
+    local WATCH_CMD=(fswatch --one-per-batch --recursive)
+
+    if [[ "$OSTYPE" =~ ^(linux-gnu|msys|cygwin)$ ]]; then
+      # The default monitor notifies on read accesses...
+      WATCH_CMD+=(--monitor poll_monitor '--latency=5')
+    fi
+
+    WATCH_CMD+=(../*)
+
+    "${WATCH_CMD[@]}" | xargs -n1 -I{} sh -c "$COMMAND"
+  elif command -v watchexec > /dev/null; then
+    watchexec --watch .. --postpone -- "sh -c '$COMMAND'"
+  else
+    >&2 echo "WARNING: Could not find fswatch ( http://emcrisostomo.github.io/fswatch/ ) or watchexec ( https://github.com/watchexec/watchexec )."
+    exit 1
   fi
-  fswatch "$@"
 }
