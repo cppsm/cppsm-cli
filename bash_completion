@@ -32,8 +32,12 @@ __cppsm_complete() {
   CURRENT="${CURRENT%\"}"
   case "$PREVIOUS" in
     cppsm)
-      # shellcheck disable=SC2207
-      COMPREPLY=($(compgen -W "add build build-watch clone format init init-hello init-library list remove setup test test-watch update upgrade" -- "$CURRENT"))
+      local COMMANDS_DIR
+      COMMANDS_DIR="$(command -v cppsm)"
+      COMMANDS_DIR="${COMMANDS_DIR%/*}/../commands"
+
+      # shellcheck disable=SC2207 disable=SC2035
+      COMPREPLY=($(compgen -W "$(cd "$COMMANDS_DIR" && echo *)" -- "$CURRENT"))
       ;;
     add)
       # shellcheck disable=SC2207
