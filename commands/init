@@ -68,20 +68,6 @@ create-parent-dir() {
   if [[ "$FILE" =~ / ]]; then mkdir -p "${FILE%/*}"; fi
 }
 
-add-link() {
-  local FILE="$1"
-  local LINK="$2"
-  if [ ! -e "$LINK" ]; then
-    create-parent-dir "$LINK"
-    ln -fs "$FILE" "$LINK"
-    git add "$LINK"
-  fi
-}
-
-add-link .cppsm/.clang-format .clang-format
-add-link .cppsm/.gitignore .gitignore
-add-link .cppsm/.prettierrc .prettierrc
-
 add-file() {
   local FILE="$1"
   if [ ! -e "$FILE" ]; then
@@ -90,6 +76,27 @@ add-file() {
     git add "$FILE"
   fi
 }
+
+add-file .clang-format << EOF
+BinPackArguments: false
+BinPackParameters: false
+ColumnLimit: 80
+IndentWidth: 2
+EOF
+
+add-file .gitignore << EOF
+.build*
+EOF
+
+add-file .prettierrc << EOF
+{
+  "bracketSpacing": false,
+  "printWidth": 80,
+  "semi": false,
+  "singleQuote": true,
+  "proseWrap": "always"
+}
+EOF
 
 add-file CMakeLists.txt << EOF
 cmake_minimum_required(VERSION 3.10)
