@@ -24,12 +24,13 @@ tree() {
   local PARENT="$5"
 
   local KEYS=()
-  while IFS= read -r KEY; do
+  IFS=$'\n'
+  for KEY in $(git config \
+                   --file "$GITMODULES" \
+                   --name-only \
+                   --get-regexp "^submodule\.($KIND)/.*\.path$"); do
     KEYS+=("$KEY")
-  done < <(git config \
-               --file "$GITMODULES" \
-               --name-only \
-               --get-regexp "^submodule\.($KIND)/.*\.path$")
+  done
 
   if [ 0 = ${#KEYS[@]} ]; then
     CONNECT='─'
