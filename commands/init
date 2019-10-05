@@ -76,11 +76,15 @@ create-parent-dir() {
 
 add-file() {
   local FILE="$1"
-  if [ ! -e "$FILE" ]; then
-    create-parent-dir "$FILE"
-    cat > "$FILE"
-    git add "$FILE"
+  if [ -e "$FILE" ]; then
+    if ! diff -q "$FILE" - > /dev/null; then
+      echo "NOTE: $FILE differs from boilerplate."
+    fi
+    return 0
   fi
+  create-parent-dir "$FILE"
+  cat > "$FILE"
+  git add "$FILE"
 }
 
 add-file .clang-format << EOF
