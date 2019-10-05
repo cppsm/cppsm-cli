@@ -10,6 +10,8 @@ cppsm add equipment https://github.com/per-framework/dumpster.cpp.git v1
 cppsm add requires https://github.com/per-framework/dumpster.cpp.git v1
 cppsm add equipment https://github.com/per-framework/dumpster.cpp.git v1
 
+cppsm upgrade
+
 cppsm list
 
 cppsm remove requires/polyfill.cpp/v1

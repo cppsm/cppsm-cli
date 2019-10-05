@@ -24,13 +24,7 @@ tree() {
   local PARENT="$5"
 
   local KEYS=()
-  IFS=$'\n'
-  for KEY in $(git config \
-                   --file "$GITMODULES" \
-                   --name-only \
-                   --get-regexp "^submodule\.($KIND)/.*\.path$"); do
-    KEYS+=("$KEY")
-  done
+  add-submodule-keys-to KEYS "$GITMODULES" "$KIND"
 
   if [ 0 = ${#KEYS[@]} ]; then
     CONNECT='─'
@@ -58,8 +52,6 @@ tree() {
 
   for ((i = 0; i < ${#KEYS[@]}; ++i)); do
     SUB=${KEYS[$i]}
-    SUB="${SUB%.path}"
-    SUB="${SUB#submodule.}"
 
     KEY="${SUB#*/}"
 

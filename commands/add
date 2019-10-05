@@ -39,11 +39,11 @@ else
   EXISTING="$DESIRED"
 fi
 
-for SUBMODULE in $(git config \
-                       --file "$EXISTING/.gitmodules" \
-                       --name-only \
-                       --get-regexp '^submodule\.requires/.*\.path$'); do
-  SUBMODULE_URL=$(git config --file "$EXISTING/.gitmodules" --get "${SUBMODULE%.path}.url")
-  SUBMODULE_BRANCH=$(git config --file "$EXISTING/.gitmodules" --get "${SUBMODULE%.path}.branch")
+KEYS=()
+add-submodule-keys-to KEYS "$EXISTING/.gitmodules" requires
+
+for KEY in "${KEYS[@]}"; do
+  SUBMODULE_URL=$(git config --file "$EXISTING/.gitmodules" --get "submodule.$KEY.url")
+  SUBMODULE_BRANCH=$(git config --file "$EXISTING/.gitmodules" --get "submodule.$KEY.branch")
   "$CPPSM/commands/add" "$KIND" "$SUBMODULE_URL" "$SUBMODULE_BRANCH"
 done

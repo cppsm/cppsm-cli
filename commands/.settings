@@ -23,3 +23,25 @@ if [ -z "$NUMBER_OF_PROCESSORS" ]; then
 fi
 
 N_PARALLEL_UPDATE="${N_PARALLEL_UPDATE:-$NUMBER_OF_PROCESSORS}"
+
+add-submodule-keys-and-paths-to() {
+  local VAR="$1"
+  local GITMODULES="$2"
+  local KIND="$3"
+  shift 3
+  local IFS=$'\n'
+  for LINE in $(git config \
+                    --file "$GITMODULES" \
+                    --get-regexp "^submodule\.($KIND)/.*\.path$" \
+                  | sed "$@"); do
+    eval "$VAR+=('$LINE')"
+  done
+}
+
+add-submodule-paths-to() {
+  add-submodule-keys-and-paths-to "$@" -e 's#^.*\.path ##g'
+}
+
+add-submodule-keys-to() {
+  add-submodule-keys-and-paths-to "$@" -e 's#^submodule\.##g' -e 's#\.path .*$##g'
+}

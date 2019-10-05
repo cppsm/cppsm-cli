@@ -17,11 +17,6 @@ fi
 git pull "${GIT_QUIET[@]}" --rebase
 
 MODULES=(.cppsm)
-while IFS='' read -r line; do
-  MODULES+=("$line")
-done < <(git config \
-             --file .gitmodules \
-             --get-regexp "^submodule\.(equipment|requires)/.*\.path$" \
-           | sed -e 's#^.*\.path ##g')
+add-submodule-paths-to MODULES .gitmodules 'equipment|requires'
 
 git submodule "${GIT_QUIET[@]}" update --jobs "$N_PARALLEL_UPDATE" --init -- "${MODULES[@]}"
