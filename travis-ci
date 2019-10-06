@@ -63,6 +63,10 @@ folded() {
   echo -e "\ntravis_fold:end:cppsm.$FOLD\r"
 }
 
+folded-finish() {
+  [ ! -f "$TMP.$1" ] || folded ... finish "$1"
+}
+
 folded ... concurrently GIT_UPDATE_PID git submodule update --init --depth 1 --jobs "$N_PARALLEL_UPDATE"
 
 if [ "$TRAVIS_OS_NAME" = linux ]; then
@@ -83,17 +87,17 @@ if ! command -v cppsm > /dev/null; then
   export PATH="$PWD/.cppsm/.cli/bin:$PATH"
 fi
 
-folded ... finish GIT_UPDATE_PID
+folded-finish GIT_UPDATE_PID
 
 for CONFIG in Debug Release; do
   if [ "$TRAVIS_OS_NAME" = linux ]; then
-    folded ... finish LIBSTD_INSTALL_PID
+    folded-finish LIBSTD_INSTALL_PID
     CMAKE_BUILD_TYPE=$CONFIG CC=clang CXX=clang++ folded "Clang $CONFIG" cppsm test
-    folded ... finish GCC_INSTALL_PID
+    folded-finish GCC_INSTALL_PID
     CMAKE_BUILD_TYPE=$CONFIG CC=gcc-8 CXX=g++-8 folded "GCC $CONFIG" cppsm test
   elif [ "$TRAVIS_OS_NAME" = windows ]; then
     CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' folded "VC2017 $CONFIG" cppsm test
-    folded ... finish MAKE_INSTALL_PID
+    folded-finish MAKE_INSTALL_PID
     CMAKE_BUILD_TYPE=$CONFIG CC="gcc" CXX="g++" folded "GCC $CONFIG" cppsm test
   elif [ "$TRAVIS_OS_NAME" = osx ]; then
     CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR=Xcode folded "Clang $CONFIG" cppsm test
@@ -105,7 +109,7 @@ for CONFIG in Debug Release; do
 done
 
 if [ "$TRAVIS_OS_NAME" = windows ]; then
-  folded ... finish VC2019_INSTALL_PID
+  folded-finish VC2019_INSTALL_PID
   folded ... choco upgrade -y cmake.install
 
   for CONFIG in Debug Release; do
@@ -134,9 +138,9 @@ format-check() {
 }
 
 if [ "$TRAVIS_OS_NAME" = osx ]; then
-  [ "$CODECOV" != 1 ] || folded ... finish LCOV_INSTALL_PID
+  [ "$CODECOV" != 1 ] || folded-finish LCOV_INSTALL_PID
   [ "$CODECOV" != 1 ] || folded 'Code coverage' code-coverage
 
-  [ "$FORMAT_CHECK" = 0 ] || folded ... finish FORMAT_INSTALL_PID
+  [ "$FORMAT_CHECK" = 0 ] || folded-finish FORMAT_INSTALL_PID
   [ "$FORMAT_CHECK" = 0 ] || folded 'Format check' format-check
 fi
