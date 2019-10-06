@@ -89,62 +89,81 @@ fi
 
 folded-finish GIT_UPDATE_PID
 
-for CONFIG in Debug Release; do
-  if [ "$TRAVIS_OS_NAME" = linux ]; then
-    folded-finish LIBSTD_INSTALL_PID
-    CMAKE_BUILD_TYPE=$CONFIG CC=clang CXX=clang++ folded "Clang $CONFIG" cppsm test
-    folded-finish GCC_INSTALL_PID
-    CMAKE_BUILD_TYPE=$CONFIG CC=gcc-9 CXX=g++-9 folded "GCC $CONFIG" cppsm test
-  elif [ "$TRAVIS_OS_NAME" = windows ]; then
-    CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' folded "VC2017 $CONFIG" cppsm test
-    folded-finish MAKE_INSTALL_PID
-    CMAKE_BUILD_TYPE=$CONFIG CC="gcc" CXX="g++" folded "GCC $CONFIG" cppsm test
-  elif [ "$TRAVIS_OS_NAME" = osx ]; then
-    CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR=Xcode folded "Clang $CONFIG" cppsm test
-    for ((i=8; i<20; ++i)); do
-      if command -v "gcc-$i" > /dev/null ; then
-        CMAKE_BUILD_TYPE=$CONFIG CC=gcc-$i CXX=g++-$i folded "GCC $CONFIG" cppsm test
-        break
-      fi
-    done
-  else
-    echo "Unsupported OS: $TRAVIS_OS_NAME"
-    exit 1
-  fi
-done
-
-if [ "$TRAVIS_OS_NAME" = windows ]; then
-  folded-finish VC2019_INSTALL_PID
-
-  for CONFIG in Debug Release; do
-    CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR="Visual Studio 16 2019" folded "VC2019 $CONFIG" cppsm test
+if [ "$TRAVIS_OS_NAME" = osx ]; then
+  for ((i=8; i<20; ++i)); do
+    if command -v "gcc-$i" > /dev/null ; then
+      GCC_VERSION="$i"
+    fi
   done
-
-  # shellcheck disable=2009,2046
-  kill -9 $(ps | grep -o "^ *[0-9]\\+  *$$ " | sed -e 's#^ *##g' -e 's# .*##g') 2>/dev/null || true
 fi
 
-code-coverage() {
-  COVERAGE=1 cppsm test
-  local COVERAGE_INFO="${TMP}coverage.info"
-  lcov --capture --directory . --output-file "$COVERAGE_INFO"
-  lcov --remove "$COVERAGE_INFO" '/Applications/*' --output-file "$COVERAGE_INFO"
-  bash <(curl -s https://codecov.io/bash) -f "$COVERAGE_INFO"
-}
+run-tests() {
+  for CONFIG in Debug Release; do
+    if [ "$TRAVIS_OS_NAME" = linux ]; then
+      folded-finish LIBSTD_INSTALL_PID
+      CMAKE_BUILD_TYPE=$CONFIG CC=clang CXX=clang++ folded "Clang $CONFIG" cppsm test
+      folded-finish GCC_INSTALL_PID
+      CMAKE_BUILD_TYPE=$CONFIG CC=gcc-9 CXX=g++-9 folded "GCC $CONFIG" cppsm test
+    elif [ "$TRAVIS_OS_NAME" = windows ]; then
+      CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR="Visual Studio 15 2017" folded "VC2017 $CONFIG" cppsm test
+      folded-finish MAKE_INSTALL_PID
+      CMAKE_BUILD_TYPE=$CONFIG CC="gcc" CXX="g++" folded "GCC $CONFIG" cppsm test
+    elif [ "$TRAVIS_OS_NAME" = osx ]; then
+      CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR=Xcode folded "Clang $CONFIG" cppsm test
+      [ -z "$GCC_VERSION" ] || CMAKE_BUILD_TYPE=$CONFIG CC=gcc-$GCC_VERSION CXX=g++-$GCC_VERSION folded "GCC $CONFIG" cppsm test
+    else
+      echo "Unsupported OS: $TRAVIS_OS_NAME"
+      exit 1
+    fi
+  done
 
-format-check() {
-  cppsm format
-  if [[ $(git status --porcelain) ]] ; then
-    git status
-    git diff
-    exit 1
+  if [ "$TRAVIS_OS_NAME" = windows ]; then
+    folded-finish VC2019_INSTALL_PID
+    folded ... choco upgrade -y cmake.install
+
+    for CONFIG in Debug Release; do
+      CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR="Visual Studio 16 2019" folded "VC2019 $CONFIG" cppsm test
+    done
+
+    # shellcheck disable=2009,2046
+    kill -9 $(ps | grep -o "^ *[0-9]\\+  *$$ " | sed -e 's#^ *##g' -e 's# .*##g') 2>/dev/null || true
   fi
 }
 
+run-tests
+
 if [ "$TRAVIS_OS_NAME" = osx ]; then
+  code-coverage() {
+    COVERAGE=1 cppsm test
+    local COVERAGE_INFO="${TMP}coverage.info"
+    lcov --capture --directory . --output-file "$COVERAGE_INFO"
+    lcov --remove "$COVERAGE_INFO" '/Applications/*' --output-file "$COVERAGE_INFO"
+    bash <(curl -s https://codecov.io/bash) -f "$COVERAGE_INFO"
+  }
+
+  format-check() {
+    cppsm format
+    if [[ $(git status --porcelain) ]] ; then
+      git status
+      git diff
+      exit 1
+    fi
+  }
+
   [ "$CODECOV" != 1 ] || folded-finish LCOV_INSTALL_PID
   [ "$CODECOV" != 1 ] || folded 'Code coverage' code-coverage
 
   [ "$FORMAT_CHECK" = 0 ] || folded-finish FORMAT_INSTALL_PID
   [ "$FORMAT_CHECK" = 0 ] || folded 'Format check' format-check
+fi
+
+if [ "$UPGRADE_CHECK" != 0 ]; then
+  upgrade() {
+    cppsm upgrade
+  }
+
+  folded 'Upgrading dependencies' upgrade
+  if ! git diff --cached --quiet; then
+    run-tests
+  fi
 fi
