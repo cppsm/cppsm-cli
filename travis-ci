@@ -94,14 +94,19 @@ for CONFIG in Debug Release; do
     folded-finish LIBSTD_INSTALL_PID
     CMAKE_BUILD_TYPE=$CONFIG CC=clang CXX=clang++ folded "Clang $CONFIG" cppsm test
     folded-finish GCC_INSTALL_PID
-    CMAKE_BUILD_TYPE=$CONFIG CC=gcc-8 CXX=g++-8 folded "GCC $CONFIG" cppsm test
+    CMAKE_BUILD_TYPE=$CONFIG CC=gcc-9 CXX=g++-9 folded "GCC $CONFIG" cppsm test
   elif [ "$TRAVIS_OS_NAME" = windows ]; then
     CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' folded "VC2017 $CONFIG" cppsm test
     folded-finish MAKE_INSTALL_PID
     CMAKE_BUILD_TYPE=$CONFIG CC="gcc" CXX="g++" folded "GCC $CONFIG" cppsm test
   elif [ "$TRAVIS_OS_NAME" = osx ]; then
     CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR=Xcode folded "Clang $CONFIG" cppsm test
-    CMAKE_BUILD_TYPE=$CONFIG CC=gcc-8 CXX=g++-8 folded "GCC $CONFIG" cppsm test
+    for ((i=8; i<20; ++i)); do
+      if command -v "gcc-$i" > /dev/null ; then
+        CMAKE_BUILD_TYPE=$CONFIG CC=gcc-$i CXX=g++-$i folded "GCC $CONFIG" cppsm test
+        break
+      fi
+    done
   else
     echo "Unsupported OS: $TRAVIS_OS_NAME"
     exit 1
@@ -110,7 +115,6 @@ done
 
 if [ "$TRAVIS_OS_NAME" = windows ]; then
   folded-finish VC2019_INSTALL_PID
-  folded ... choco upgrade -y cmake.install
 
   for CONFIG in Debug Release; do
     CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR="Visual Studio 16 2019" folded "VC2019 $CONFIG" cppsm test
