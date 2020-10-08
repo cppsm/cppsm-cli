@@ -69,10 +69,7 @@ folded-finish() {
 
 folded ... concurrently GIT_UPDATE_PID git submodule update --init --depth 1 --jobs "$N_PARALLEL_UPDATE"
 
-if [ "$TRAVIS_OS_NAME" = linux ]; then
-  folded ... concurrently LIBSTD_INSTALL_PID locked bash -c 'sudo -E apt-add-repository -y ppa:ubuntu-toolchain-r/test && sudo -E apt-get -yq update && sudo -E apt-get -yq --no-install-suggests --no-install-recommends install libstdc++-8-dev'
-  folded ... concurrently GCC_INSTALL_PID locked sudo -E apt-get -yq --no-install-suggests --no-install-recommends install g++-8
-elif [ "$TRAVIS_OS_NAME" = osx ]; then
+if [ "$TRAVIS_OS_NAME" = osx ]; then
   [ "$EMSCRIPTEN" != 1 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently EMSCRIPTEN_INSTALL_PID locked brew install emscripten
   [ "$CODECOV" != 1 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently LCOV_INSTALL_PID locked brew install lcov
   [ "$FORMAT_CHECK" = 0 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently FORMAT_INSTALL_PID locked brew install prettier clang-format
@@ -101,9 +98,7 @@ fi
 run-tests() {
   for CONFIG in Debug Release; do
     if [ "$TRAVIS_OS_NAME" = linux ]; then
-      folded-finish LIBSTD_INSTALL_PID
       CMAKE_BUILD_TYPE=$CONFIG CC=clang CXX=clang++ folded "Clang $CONFIG" cppsm test
-      folded-finish GCC_INSTALL_PID
       CMAKE_BUILD_TYPE=$CONFIG CC=gcc-9 CXX=g++-9 folded "GCC $CONFIG" cppsm test
     elif [ "$TRAVIS_OS_NAME" = windows ]; then
       CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR="Visual Studio 15 2017" folded "VC2017 $CONFIG" cppsm test
