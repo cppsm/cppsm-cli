@@ -73,6 +73,7 @@ if [ "$TRAVIS_OS_NAME" = linux ]; then
   folded ... concurrently LIBSTD_INSTALL_PID locked bash -c 'sudo -E apt-add-repository -y ppa:ubuntu-toolchain-r/test && sudo -E apt-get -yq update && sudo -E apt-get -yq --no-install-suggests --no-install-recommends install libstdc++-8-dev'
   folded ... concurrently GCC_INSTALL_PID locked sudo -E apt-get -yq --no-install-suggests --no-install-recommends install g++-8
 elif [ "$TRAVIS_OS_NAME" = osx ]; then
+  [ "$EMSCRIPTEN" != 1 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently EMSCRIPTEN_INSTALL_PID locked brew install emscripten
   [ "$CODECOV" != 1 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently LCOV_INSTALL_PID locked brew install lcov
   [ "$FORMAT_CHECK" = 0 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently FORMAT_INSTALL_PID locked brew install prettier clang-format
 elif [ "$TRAVIS_OS_NAME" = windows ]; then
@@ -127,6 +128,15 @@ run-tests() {
 
     # shellcheck disable=2009,2046
     kill -9 $(ps | grep -o "^ *[0-9]\\+  *$$ " | sed -e 's#^ *##g' -e 's# .*##g') 2>/dev/null || true
+  fi
+
+  if [ "$TRAVIS_OS_NAME" = osx ] && [ "$EMSCRIPTEN" = 1 ]; then
+    folded-finish EMSCRIPTEN_INSTALL_PID
+    local EMSCRIPTEN_TOOLCHAIN_FILE
+    EMSCRIPTEN_TOOLCHAIN_FILE="$(find /usr/local -name Emscripten.cmake)"
+    for CONFIG in Debug Release; do
+      CMAKE_BUILD_TYPE=$CONFIG CMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN_TOOLCHAIN_FILE" folded "Emscripten $CONFIG" cppsm test
+    done
   fi
 }
 
