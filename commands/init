@@ -21,6 +21,9 @@ if [ -z "$VERSION" ]; then
     VERSION="$(git symbolic-ref --short HEAD)"
   fi
 fi
+if [ -z "$VERSION" ] && [ -n "$TRAVIS_BRANCH" ]; then
+  VERSION="$TRAVIS_BRANCH"
+fi
 if [ -z "$VERSION" ]; then
   VERSION="v1"
 fi
@@ -46,8 +49,10 @@ if [ ! -e .git ] || [ -z "$NAME" ] || [ -z "$VERSION" ]; then
   git init
 fi
 
-if [ "$(git symbolic-ref --short HEAD)" != "$VERSION" ]; then
-  git checkout -b "$VERSION"
+if git symbolic-ref --short HEAD > /dev/null 2>&1; then
+  if [ "$(git symbolic-ref --short HEAD)" != "$VERSION" ]; then
+    git checkout -b "$VERSION"
+  fi
 fi
 
 if [ -n "$TRAVIS_BRANCH" ]; then
