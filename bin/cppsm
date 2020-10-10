@@ -15,13 +15,28 @@ if [ "$UPGRADE" = 1 ]; then
   exec git -C "$CPPSM" pull "${GIT_QUIET[@]}" --rebase
 fi
 
+# shellcheck disable=SC2035
+COMMANDS="$(cd "$CPPSM/commands" && echo *)"
+COMMANDS="${COMMANDS// /|}"
+
 BRANCH="$(git -C "$CPPSM" symbolic-ref --short HEAD)"
+
+cat << EOF
+Usage: ${0##*/} [$COMMANDS]
+
+Run any command with --help to see a brief description of the command.
+
+Visit https://cppsm.github.io/ for full documentation.
+
+Branch: $BRANCH
+$(git -C "$CPPSM" log -n 5 --pretty=oneline --abbrev-commit | sed 's#^#  #g')
+EOF
 
 git -C "$CPPSM" fetch "${GIT_QUIET[@]}" origin "$BRANCH"
 
 ORIGIN="$(git -C "$CPPSM" log --pretty=oneline --abbrev-commit "..origin/$BRANCH" | sed 's#^#  #g')"
 if [ -n "$ORIGIN" ]; then
-  ORIGIN="$(cat << EOF
+  cat << EOF
 
 Origin:
 $ORIGIN
@@ -32,21 +47,6 @@ Run
 
 to upgrade cppsm.
 EOF
-)"
 fi
 
-# shellcheck disable=SC2035
-COMMANDS="$(cd "$CPPSM/commands" && echo *)"
-COMMANDS="${COMMANDS// /|}"
-cat << EOF
-Usage: ${0##*/} [$COMMANDS]
-
-Run any command with --help to see a brief description of the command.
-
-Visit https://cppsm.github.io/ for full documentation.
-
-Branch: $BRANCH
-$(git -C "$CPPSM" log -n 5 --pretty=oneline --abbrev-commit | sed 's#^#  #g')
-$ORIGIN
-EOF
 exit 1
