@@ -69,8 +69,16 @@ folded-finish() {
 
 folded ... concurrently GIT_UPDATE_PID git submodule update --init --depth 1 --jobs "$N_PARALLEL_UPDATE"
 
+install-emsdk() {
+  git clone https://github.com/emscripten-core/emsdk.git .build-emsdk
+  cd .build-emsdk
+  ./emsdk install latest
+  ./emsdk activate latest
+}
+
+[ "$TRAVIS_OS_NAME" = windows ] || [ "$EMSCRIPTEN" != 1 ] || folded ... concurrently EMSCRIPTEN_INSTALL_PID install-emsdk
+
 if [ "$TRAVIS_OS_NAME" = osx ]; then
-  [ "$EMSCRIPTEN" != 1 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently EMSCRIPTEN_INSTALL_PID locked brew install emscripten
   [ "$CODECOV" != 1 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently LCOV_INSTALL_PID locked brew install lcov
   [ "$FORMAT_CHECK" = 0 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently FORMAT_INSTALL_PID locked brew install prettier clang-format
 elif [ "$TRAVIS_OS_NAME" = windows ]; then
@@ -124,12 +132,12 @@ run-tests() {
     kill -9 $(ps | grep -o "^ *[0-9]\\+  *$$ " | sed -e 's#^ *##g' -e 's# .*##g') 2>/dev/null || true
   fi
 
-  if [ "$TRAVIS_OS_NAME" = osx ] && [ "$EMSCRIPTEN" = 1 ]; then
+  if [ "$TRAVIS_OS_NAME" != windows ] && [ "$EMSCRIPTEN" = 1 ]; then
     folded-finish EMSCRIPTEN_INSTALL_PID
-    local EMSCRIPTEN_TOOLCHAIN_FILE
-    EMSCRIPTEN_TOOLCHAIN_FILE="$(find /usr/local -name Emscripten.cmake)"
+    folded "Sourcing Emscripten environment" . .build-emsdk/emsdk_env.sh
+    local EMSCRIPTEN_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
     for CONFIG in Debug Release; do
-      CMAKE_BUILD_TYPE=$CONFIG CMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN_TOOLCHAIN_FILE" folded "Emscripten $CONFIG" cppsm test
+      CMAKE_BUILD_TYPE=$CONFIG CMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN_TOOLCHAIN_FILE" CC='' CXX='' folded "Emscripten $CONFIG" cppsm test
     done
   fi
 }
