@@ -42,7 +42,7 @@ done
 
 mkdir travis_ci_test && cd "$_"
 
-NAME=hello cppsm init-hello
+NAME=hello VERSION=v1 cppsm init-hello
 git commit -m Initial
 
 ../travis-ci

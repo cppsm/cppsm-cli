@@ -82,8 +82,8 @@ if [ "$TRAVIS_OS_NAME" = osx ]; then
   [ "$CODECOV" != 1 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently LCOV_INSTALL_PID locked brew install lcov
   [ "$FORMAT_CHECK" = 0 ] || HOMEBREW_NO_INSTALL_CLEANUP=1 folded ... concurrently FORMAT_INSTALL_PID locked brew install prettier clang-format
 elif [ "$TRAVIS_OS_NAME" = windows ]; then
-  folded ... concurrently MAKE_INSTALL_PID choco install make
-  folded ... concurrently VC2019_INSTALL_PID ignore choco install visualstudio2019-workload-vctools
+  [ "$GCC" = 0 ] || folded ... concurrently MAKE_INSTALL_PID choco install make
+  [ "$VS2019" = 0 ] || folded ... concurrently VC2019_INSTALL_PID ignore choco install visualstudio2019-workload-vctools
 fi
 
 export CMAKE_HELP
@@ -95,7 +95,7 @@ fi
 
 folded-finish GIT_UPDATE_PID
 
-if [ "$TRAVIS_OS_NAME" = osx ]; then
+if [ "$TRAVIS_OS_NAME" = osx ] && [ "$GCC" != 0 ]; then
   for ((i=8; i<20; ++i)); do
     if command -v "gcc-$i" > /dev/null ; then
       GCC_VERSION="$i"
@@ -106,22 +106,22 @@ fi
 run-tests() {
   for CONFIG in Debug Release; do
     if [ "$TRAVIS_OS_NAME" = linux ]; then
-      CMAKE_BUILD_TYPE=$CONFIG CC=clang CXX=clang++ folded "Clang $CONFIG" cppsm test
-      CMAKE_BUILD_TYPE=$CONFIG CC=gcc-9 CXX=g++-9 folded "GCC $CONFIG" cppsm test
+      [ "$CLANG" = 0 ] || CMAKE_BUILD_TYPE=$CONFIG CC=clang CXX=clang++ folded "Clang $CONFIG" cppsm test
+      [ "$GCC" = 0 ] || CMAKE_BUILD_TYPE=$CONFIG CC=gcc-9 CXX=g++-9 folded "GCC $CONFIG" cppsm test
     elif [ "$TRAVIS_OS_NAME" = windows ]; then
-      CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR="Visual Studio 15 2017" folded "VC2017 $CONFIG" cppsm test
-      folded-finish MAKE_INSTALL_PID
-      CMAKE_BUILD_TYPE=$CONFIG CC="gcc" CXX="g++" folded "GCC $CONFIG" cppsm test
+      [ "$VS2017" = 0 ] || CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR="Visual Studio 15 2017" folded "VC2017 $CONFIG" cppsm test
+      [ "$GCC" = 0 ] || folded-finish MAKE_INSTALL_PID
+      [ "$GCC" = 0 ] || CMAKE_BUILD_TYPE=$CONFIG CC="gcc" CXX="g++" folded "GCC $CONFIG" cppsm test
     elif [ "$TRAVIS_OS_NAME" = osx ]; then
-      CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR=Xcode folded "Clang $CONFIG" cppsm test
-      [ -z "$GCC_VERSION" ] || CMAKE_BUILD_TYPE=$CONFIG CC=gcc-$GCC_VERSION CXX=g++-$GCC_VERSION folded "GCC $CONFIG" cppsm test
+      [ "$CLANG" = 0 ] || CMAKE_BUILD_TYPE=$CONFIG CC='' CXX='' CMAKE_GENERATOR=Xcode folded "Clang $CONFIG" cppsm test
+      [ "$GCC" = 0 ] || CMAKE_BUILD_TYPE=$CONFIG CC=gcc-$GCC_VERSION CXX=g++-$GCC_VERSION folded "GCC $CONFIG" cppsm test
     else
       echo "Unsupported OS: $TRAVIS_OS_NAME"
       exit 1
     fi
   done
 
-  if [ "$TRAVIS_OS_NAME" = windows ]; then
+  if [ "$TRAVIS_OS_NAME" = windows ] && [ "$VS2019" != 0 ]; then
     folded-finish VC2019_INSTALL_PID
 
     for CONFIG in Debug Release; do
