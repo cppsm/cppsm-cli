@@ -18,8 +18,8 @@ Options:
 
   CMAKE_TOOLCHAIN_FILE=|...
 
-  CC=cc|gcc|clang|...
-  CXX=c++|g++|clang++|...
+  CC=cc|gcc|clang|emcc|...
+  CXX=c++|g++|clang++|emcc|...
 
   CLEAN=0|1
 
@@ -50,6 +50,19 @@ GENERATE_CMD=(cmake "-Werror=dev" "-Werror=deprecated")
 BUILD_DIR=".build"
 
 # Compiler
+
+if [ "$CC" = emcc ] || [ "$CXX" = emcc ]; then
+  if [ -z "$CMAKE_TOOLCHAIN_FILE" ] \
+       && [ -n "$EMSDK" ] \
+       && [ -f "$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" ] \
+       && command -v emcc > /dev/null; then
+    CMAKE_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+    CC=''
+    CXX=''
+  else
+    >&2 echo "WARNING: emcc specified, but EMSDK does not seem to be available."
+  fi
+fi
 
 if [ -n "$CMAKE_TOOLCHAIN_FILE" ]; then
   GENERATE_CMD+=("-DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE")

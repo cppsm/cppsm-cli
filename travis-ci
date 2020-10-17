@@ -135,9 +135,8 @@ run-tests() {
   if [ "$TRAVIS_OS_NAME" != windows ] && [ "$EMSCRIPTEN" = 1 ]; then
     folded-finish EMSCRIPTEN_INSTALL_PID
     folded "Sourcing Emscripten environment" . .build-emsdk/emsdk_env.sh
-    local EMSCRIPTEN_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
     for CONFIG in Debug Release; do
-      CMAKE_BUILD_TYPE=$CONFIG CMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN_TOOLCHAIN_FILE" CC='' CXX='' folded "Emscripten $CONFIG" cppsm test
+      CMAKE_BUILD_TYPE=$CONFIG CC=emcc CXX=emcc folded "Emscripten $CONFIG" cppsm test
     done
   fi
 }
