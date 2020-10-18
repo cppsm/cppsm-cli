@@ -153,6 +153,7 @@ if [ "$TRAVIS_OS_NAME" = osx ]; then
   }
 
   format-check() {
+    git checkout .
     cppsm format
     if [[ $(git status --porcelain) ]] ; then
       git status
